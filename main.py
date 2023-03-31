@@ -2,6 +2,7 @@ import argparse
 import configparser
 from frame import frame
 from palette import palette
+from server import server
 import radar.osm
 import radar.map
 import radar.fetch
@@ -9,6 +10,7 @@ import forecast.render
 import forecast.open_meteo
 import pickle
 import os
+import logging
 
 
 def render(config, dry_run: bool):
@@ -65,6 +67,8 @@ def create_data_dir(config):
     if not os.path.isdir(data_dir):
         os.mkdir(data_dir)
 
+def run_server(config, _: bool):
+    server.run(config)
 
 COMMANDS = {
     'render': render,
@@ -72,7 +76,8 @@ COMMANDS = {
     'render-forecast': render_forecast,
     'combine-renders': combine_renders,
     'download-osm': download_osm,
-    'create-palette': create_palette
+    'create-palette': create_palette,
+    'run-server': run_server
 }
 
 
@@ -92,6 +97,11 @@ def main():
 
     config = configparser.ConfigParser()
     config.read('./config/config.ini')
+
+    logging.basicConfig(
+        filename=config['logging']['file'],
+        encoding='utf-8',
+        level=logging.getLevelName(config['logging']['level']))
 
     if args.command in COMMANDS:
         COMMANDS[args.command](config, args.dry_run)

@@ -2,9 +2,5 @@ venv
 cache
 
 # files
-osm.graphml
-nexrad-latest-raw
-palette.png
-forecast.png
-radar.png
-frame.png
+data/
+*.log
