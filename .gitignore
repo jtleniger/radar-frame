@@ -1,0 +1,18 @@
+venv
+cache
+__pycache__
+
+# config
+config/config.ini
+
+# files
+osm.graphml
+nexrad-latest-raw
+nexrad-test-raw
+forecast-test-data
+palette.png
+forecast.png
+radar.png
+frame.png
+
+terminess.ttf
