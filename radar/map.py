@@ -34,7 +34,7 @@ def make_plot(config, data, field, vmin, vmax, sweep):
         min_lon=config['radar.bbox']['min_lon'],
         max_lon=config['radar.bbox']['max_lon'])
 
-    graph = osmnx.io.load_graphml('osm.graphml')
+    graph = osmnx.io.load_graphml(config['files']['osm'])
 
     osmnx.plot_graph(graph, ax=ax, bgcolor='none', edge_color='white', edge_linewidth=1, node_size=0) # type: ignore
 

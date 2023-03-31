@@ -1,7 +1,5 @@
 import argparse
 import configparser
-from forecast.current import CurrentConditions
-from forecast.day import Day
 from frame import frame
 from palette import palette
 import radar.osm
@@ -10,6 +8,7 @@ import radar.fetch
 import forecast.render
 import forecast.open_meteo
 import pickle
+import os
 
 
 def render(config, dry_run: bool):
@@ -37,7 +36,7 @@ def render_forecast(config, dry_run: bool):
     if not dry_run:
         current_conditions, forecast_data = forecast.open_meteo.fetch(config)
     else:
-        with open('./forecast-test-data', 'rb') as infile:
+        with open(config['files']['forecast_data_test'], 'rb') as infile:
             data = pickle.load(infile)
 
             current_conditions = data['current']
@@ -60,6 +59,13 @@ def create_palette(config, _: bool):
     palette.create(config)
 
 
+def create_data_dir(config):
+    data_dir = config['files']['dir']
+
+    if not os.path.isdir(data_dir):
+        os.mkdir(data_dir)
+
+
 COMMANDS = {
     'render': render,
     'render-radar': render_radar,
@@ -72,7 +78,7 @@ COMMANDS = {
 
 def main():
     epilog = 'commands:\n'
-    epilog += '\n'.join([ f"  {c[0] + ':':<20}{c[1].__doc__}" for c in COMMANDS.items() ])
+    epilog += '\n'.join([f"  {c[0] + ':':<20}{c[1].__doc__}" for c in COMMANDS.items()])
     parser = argparse.ArgumentParser(
         usage='%(prog)s [COMMAND] [-d]',
         formatter_class=argparse.RawDescriptionHelpFormatter,

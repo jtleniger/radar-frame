@@ -6,13 +6,6 @@ __pycache__
 config/config.ini
 
 # files
-osm.graphml
-nexrad-latest-raw
-nexrad-test-raw
-forecast-test-data
-palette.png
-forecast.png
-radar.png
-frame.png
+data/
 
 terminess.ttf
