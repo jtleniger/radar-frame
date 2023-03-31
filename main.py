@@ -43,7 +43,8 @@ def render_forecast(config, dry_run: bool):
             current_conditions = data['current']
             forecast_data = data['forecast']
 
-    forecast.render.create_weather_image(
+    forecast.render.render_image(
+        config,
         current_conditions,
         forecast_data
     )
