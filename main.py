@@ -11,13 +11,16 @@ import forecast.open_meteo
 import pickle
 import os
 import logging
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 def render(config, dry_run: bool):
     """runs the full render process"""
+    logging.info('rendering frame image')
     render_radar(config, dry_run)
     render_forecast(config, dry_run)
     combine_renders(config, dry_run)
+    logging.info('done')
 
 
 def render_radar(config, dry_run: bool):
@@ -68,7 +71,24 @@ def create_data_dir(config):
         os.mkdir(data_dir)
 
 def run_server(config, _: bool):
-    server.run(config)
+    scheduler = BackgroundScheduler()
+
+    def radar_and_combine_job():
+        render_radar(config, False)
+        combine_renders(config, False)
+
+    def forecast_job():
+        render_forecast(config, False)
+
+    forecast_job()
+    radar_and_combine_job()
+    
+    scheduler.add_job(radar_and_combine_job, 'interval', minutes=7, id='radar_and_combine')
+    scheduler.add_job(forecast_job, 'interval', hours=1, id='forecast')
+    scheduler.start()
+
+    s = server.create(config)
+    s.run()
 
 COMMANDS = {
     'render': render,

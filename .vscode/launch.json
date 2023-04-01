@@ -11,7 +11,7 @@
             "program": "main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["-d", "render"]
+            "args": ["-d", "run-server"]
         }
     ]
 }
