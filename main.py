@@ -11,7 +11,7 @@ import forecast.open_meteo
 import pickle
 import os
 import logging
-from apscheduler.schedulers.background import BackgroundScheduler
+import logging.handlers
 
 
 def render(config, dry_run: bool):
@@ -26,7 +26,14 @@ def render(config, dry_run: bool):
 def render_radar(config, dry_run: bool):
     """renders an image from the latest radar data. if --dry-run is set, uses ./nexrad-test-data instead."""
     if not dry_run:
-        radar.fetch.fetch_radar(config)
+        latest = radar.fetch.latest_object(config)
+
+        if not latest:
+            logging.error('could not fetch latest radar data')
+            return
+
+        radar.fetch.fetch_radar(config, latest)
+
     radar.map.render_composite(config, dry_run)
 
 
@@ -70,25 +77,34 @@ def create_data_dir(config):
     if not os.path.isdir(data_dir):
         os.mkdir(data_dir)
 
+
 def run_server(config, _: bool):
-    scheduler = BackgroundScheduler()
-
-    def radar_and_combine_job():
-        render_radar(config, False)
-        combine_renders(config, False)
-
-    def forecast_job():
-        render_forecast(config, False)
-
-    forecast_job()
-    radar_and_combine_job()
-    
-    scheduler.add_job(radar_and_combine_job, 'interval', minutes=7, id='radar_and_combine')
-    scheduler.add_job(forecast_job, 'interval', hours=1, id='forecast')
-    scheduler.start()
-
     s = server.create(config)
     s.run()
+
+
+def get_config():
+    config = configparser.ConfigParser()
+    config.read('./config/config.ini')
+    return config
+
+
+def setup_logs(config):
+    handler = logging.handlers.RotatingFileHandler(config['logging']['file'], maxBytes=100_000, backupCount=4)
+    handler.setFormatter(logging.Formatter('{asctime} {levelname} {name} {filename}:{lineno} {message}', style='{'))
+
+    logging.basicConfig(
+        handlers=[handler],
+        encoding='utf-8',
+        level=logging.getLevelName(config['logging']['level']))
+
+
+def create_server():
+    """Helper to create a server to be used by Gunicorn."""
+    config = get_config()
+    setup_logs(config)
+    return server.create(config)
+
 
 COMMANDS = {
     'render': render,
@@ -97,7 +113,7 @@ COMMANDS = {
     'combine-renders': combine_renders,
     'download-osm': download_osm,
     'create-palette': create_palette,
-    'run-server': run_server
+    'run-server': run_server,
 }
 
 
@@ -115,13 +131,8 @@ def main():
 
     args = parser.parse_args()
 
-    config = configparser.ConfigParser()
-    config.read('./config/config.ini')
-
-    logging.basicConfig(
-        filename=config['logging']['file'],
-        encoding='utf-8',
-        level=logging.getLevelName(config['logging']['level']))
+    config = get_config()
+    setup_logs(config)
 
     if args.command in COMMANDS:
         COMMANDS[args.command](config, args.dry_run)
