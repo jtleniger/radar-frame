@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 from urllib.request import urlopen
 import json
 from datetime import datetime
+from pytz import timezone
 
 BASE_PARAMS = {
     'daily': ','.join([
@@ -18,16 +19,19 @@ BASE_PARAMS = {
     'current_weather': 'true',
     'temperature_unit': 'fahrenheit',
     'windspeed_unit': 'mph',
-    'precipitation_unit': 'inch',
-    'timezone': 'America/Denver'
+    'precipitation_unit': 'inch'
 }
 
 
 def fetch(config):
+    timezone_str = config['forecast']['timezone']
+    local_tz = timezone(timezone_str)
+
     params = BASE_PARAMS
     params['latitude'] = config['forecast']['lat']
     params['longitude'] = config['forecast']['lon']
     params['forecast_days'] = config['forecast']['days']
+    params['timezone'] = timezone_str
 
     response = urlopen(f"{config['forecast']['base_api_url']}{urlencode(BASE_PARAMS)}")
 
@@ -39,7 +43,9 @@ def fetch(config):
     current = CurrentConditions(
         temp_f=data['current_weather']['temperature'],
         wind_mph=data['current_weather']['windspeed'],
-        code=data['current_weather']['weathercode'])
+        code=data['current_weather']['weathercode'],
+        sunrise_local=local_tz.localize(datetime.fromisoformat(data['daily']['sunrise'][0])),
+        sunset_local=local_tz.localize(datetime.fromisoformat(data['daily']['sunset'][0])))
     
     days = []
 

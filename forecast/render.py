@@ -4,6 +4,8 @@ import forecast.icon as icons
 
 from forecast.current import CurrentConditions
 from forecast.day import Day
+from pytz import timezone
+from datetime import datetime, timezone as pytimezone
 
 WHITE = '#FFF'
 BLACK = '#000'
@@ -45,7 +47,11 @@ def render_image(config, current: CurrentConditions, forecast: list[Day]):
     draw.text((width / 2 + 12, y), f"{str(round(current.temp_f))}°", font=fonts['large'], fill=BLACK, anchor="mt")
     y += round(72 * scale)
 
-    icon = codes.code_to_img(current.code, False, large_icon_size)
+    now_utc = datetime.now(tz=pytimezone.utc)
+    local_tz = timezone(config['forecast']['timezone'])
+    now_local = now_utc.astimezone(local_tz)
+
+    icon = codes.code_to_img(current.code, current.is_night(now_local), large_icon_size)
     image.paste(icon, ((width // 2) - round(48 * scale), y - round(24 * scale)), icon)
     y += round(64 * scale)
 

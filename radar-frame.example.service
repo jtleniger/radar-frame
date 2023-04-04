@@ -1,0 +1,12 @@
+[Unit]
+Description=Radar Frame
+After=network.target
+
+[Service]
+User=your_username
+Group=www-data
+WorkingDirectory=/path/to/your/radar-frame
+ExecStart=/bin/bash -c 'source /path/to/your/radar-frame/bin/activate && gunicorn --log-level=info "main:create_server()"'
+
+[Install]
+WantedBy=multi-user.target
