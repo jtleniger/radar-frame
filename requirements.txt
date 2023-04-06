@@ -1,7 +1,9 @@
+pyproj==3.2.1
 boto3
 matplotlib
 cartopy
 osmnx
 arm_pyart
-Flask
 gunicorn
+Flask
+cairosvg

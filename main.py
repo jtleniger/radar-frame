@@ -134,6 +134,8 @@ def main():
     config = get_config()
     setup_logs(config)
 
+    create_data_dir(config)
+
     if args.command in COMMANDS:
         COMMANDS[args.command](config, args.dry_run)
 

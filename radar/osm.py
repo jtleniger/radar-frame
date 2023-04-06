@@ -12,4 +12,4 @@ def download_data(config):
         bbox_config['min_lon'],
         custom_filter=('["highway"~"motorway|primary"]'))
 
-    io.save_graphml(graph, filepath='osm.graphml')
+    io.save_graphml(graph, filepath=config['files']['osm'])

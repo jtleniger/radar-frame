@@ -1,5 +1,5 @@
 import logging
-from flask import Flask, send_file
+from flask import Flask, send_file, jsonify
 import os
 from datetime import datetime, timezone, timedelta
 import radar.fetch
@@ -15,6 +15,11 @@ def create(config):
     logger = logging.getLogger(__name__)
 
     app = Flask(__name__, root_path=os.getcwd())
+
+    @app.route('/last-update')
+    def last_update_get():
+        global last_update
+        return jsonify({ 'last_update': last_update.isoformat() })
 
     @app.route('/frame')
     def frame_get():

@@ -8,5 +8,6 @@ config/config.ini
 # files
 data/
 *.log
+radar-frame.tar
 
 terminess.ttf
