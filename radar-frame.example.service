@@ -1,12 +1,16 @@
 [Unit]
 Description=Radar Frame
-After=network.target
+After=docker.service
+Requires=docker.service
 
 [Service]
-User=your_username
-Group=www-data
-WorkingDirectory=/path/to/your/radar-frame
-ExecStart=/bin/bash -c 'source /path/to/your/radar-frame/bin/activate && gunicorn --log-level=info "main:create_server()"'
+TimeoutStartSec=0
+Restart=always
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStart=/usr/bin/docker run --rm -p 8000:8000 --name %n radar-frame-arm
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

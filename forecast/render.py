@@ -6,6 +6,7 @@ from forecast.current import CurrentConditions
 from forecast.day import Day
 from pytz import timezone
 from datetime import datetime, timezone as pytimezone
+from typing import List
 
 WHITE = '#FFF'
 BLACK = '#000'
@@ -15,7 +16,7 @@ def get_font(size):
     return ImageFont.truetype("terminess.ttf", size)
 
 
-def render_image(config, current: CurrentConditions, forecast: list[Day]):
+def render_image(config, current: CurrentConditions, forecast: List[Day]):
     frame_config = config['frame']
     file_config = config['files']
 
@@ -87,7 +88,7 @@ def render_image(config, current: CurrentConditions, forecast: list[Day]):
         x += round(26 * scale)
 
         draw.text((x, y), f"{str(round(day.wind)) + ' mph':>7}", font=fonts['xsmall'], fill=BLACK)
-        x += round(48 * scale)
+        x += round(54 * scale)
 
         # Rain
         icon = icons.get_icon_as_png('wi-raindrop', small_icon_size)

@@ -8,6 +8,9 @@ config/config.ini
 # files
 data/
 *.log
-radar-frame.tar
+radar-frame-arm.tar
+radar-frame-amd64.tar
+radar-frame-arm.tar.zip
+radar-frame-amd64.tar.zip
 
 terminess.ttf

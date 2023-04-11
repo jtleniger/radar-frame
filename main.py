@@ -3,9 +3,8 @@ import configparser
 from frame import frame
 from palette import palette
 from server import server
-import radar.osm
-import radar.map
 import radar.fetch
+import radar.render
 import forecast.render
 import forecast.open_meteo
 import pickle
@@ -34,13 +33,8 @@ def render_radar(config, dry_run: bool):
 
         radar.fetch.fetch_radar(config, latest)
 
-    radar.map.render_composite(config, dry_run)
+    radar.render.render(config, dry_run)
 
-
-def download_osm(config, dry_run: bool):
-    """downloads OSM data. if --dry-run is passed, does nothing."""
-    if not dry_run:
-        radar.osm.download_data(config)
 
 
 def render_forecast(config, dry_run: bool):
@@ -95,7 +89,6 @@ def setup_logs(config):
 
     logging.basicConfig(
         handlers=[handler],
-        encoding='utf-8',
         level=logging.getLevelName(config['logging']['level']))
 
 
@@ -111,7 +104,6 @@ COMMANDS = {
     'render-radar': render_radar,
     'render-forecast': render_forecast,
     'combine-renders': combine_renders,
-    'download-osm': download_osm,
     'create-palette': create_palette,
     'run-server': run_server,
 }

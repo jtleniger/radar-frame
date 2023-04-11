@@ -3,7 +3,7 @@ from flask import Flask, send_file, jsonify
 import os
 from datetime import datetime, timezone, timedelta
 import radar.fetch
-import radar.map
+import radar.render
 import forecast.render
 import forecast.open_meteo
 import frame.frame
@@ -45,7 +45,7 @@ def create(config):
 
             # Radar
             radar.fetch.fetch_radar(config, latest)
-            radar.map.render_composite(config, False)
+            radar.render.render(config, False)
 
             # Forecast
             current_conditions, forecast_data = forecast.open_meteo.fetch(config)
