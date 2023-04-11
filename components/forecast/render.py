@@ -1,6 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
-import forecast.codes as codes
-import forecast.icon as icons
+import components.forecast.codes as codes
+import components.forecast.icon as icons
 
 from sources import open_meteo
 from pytz import timezone

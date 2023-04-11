@@ -6,6 +6,8 @@ from pytz import timezone
 from dataclasses import dataclass
 from typing import List
 
+from config.config import Config
+
 
 @dataclass
 class CurrentConditions:
@@ -42,12 +44,13 @@ class Request:
     days: int
 
     @staticmethod
-    def from_config(config):
+    def from_config():
+        config = Config.instance()
         return Request(
             timezone=config['forecast']['timezone'],
-            latitude=config['forecast']['lat'],
-            longitude=config['forecast']['lon'],
-            days=config['forecast']['days']
+            latitude=float(config['forecast']['lat']),
+            longitude=float(config['forecast']['lon']),
+            days=int(config['forecast']['days'])
         )
 
 

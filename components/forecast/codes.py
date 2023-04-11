@@ -1,4 +1,4 @@
-from forecast.icon import get_icon_as_png
+from components.forecast.icon import get_icon_as_png
 
 def code_to_string(code):
     if code == 0 or code == 1:

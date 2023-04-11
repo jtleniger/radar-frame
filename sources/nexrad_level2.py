@@ -5,6 +5,7 @@ from botocore.config import Config
 from datetime import timedelta, timezone, datetime
 from dataclasses import dataclass
 from typing import Optional
+from config.config import Config as AppConfig
 
 _BUCKET = 'noaa-nexrad-level2'
 
@@ -21,10 +22,12 @@ def _key_date_string(date: datetime) -> str:
     return date.date().strftime('%Y/%m/%d')
 
 
-def latest_object(nexrad_id: str) -> Optional[Object]:
+def latest_object() -> Optional[Object]:
+    config = AppConfig.instance()
+
     s3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))
 
-    nexrad_id = nexrad_id
+    nexrad_id = config['radar']['nexrad_id']
     now = datetime.now(tz=timezone.utc)
 
     prefix = f'{_key_date_string(now)}/{nexrad_id}'
