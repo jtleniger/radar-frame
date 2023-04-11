@@ -3,10 +3,9 @@ import configparser
 from frame import frame
 from palette import palette
 from server import server
-import radar.fetch
-import radar.render
-import forecast.render
-import forecast.open_meteo
+from sources import nexrad_level2, open_meteo
+from components.radar.render import render as _render_radar
+from components.forecast.render import render as _render_forecast
 import pickle
 import os
 import logging
@@ -25,34 +24,24 @@ def render(config, dry_run: bool):
 def render_radar(config, dry_run: bool):
     """renders an image from the latest radar data. if --dry-run is set, uses ./nexrad-test-data instead."""
     if not dry_run:
-        latest = radar.fetch.latest_object(config)
+        latest = nexrad_level2.latest_object(config['radar']['nexrad_id'])
 
         if not latest:
             logging.error('could not fetch latest radar data')
             return
 
-        radar.fetch.fetch_radar(config, latest)
+        nexrad_level2.download(latest, to=config['files']['radar_raw'])
 
-    radar.render.render(config, dry_run)
+    _render_radar(config, dry_run)
 
 
 
 def render_forecast(config, dry_run: bool):
     """renders an image from the latest forecast data. if --dry-run is set, uses ./forecast-test-data instead."""
     if not dry_run:
-        current_conditions, forecast_data = forecast.open_meteo.fetch(config)
-    else:
-        with open(config['files']['forecast_data_test'], 'rb') as infile:
-            data = pickle.load(infile)
+        res = open_meteo.get(open_meteo.Request.from_config(config))
 
-            current_conditions = data['current']
-            forecast_data = data['forecast']
-
-    forecast.render.render_image(
-        config,
-        current_conditions,
-        forecast_data
-    )
+        _render_forecast(config, res)
 
 
 def combine_renders(config, _: bool):

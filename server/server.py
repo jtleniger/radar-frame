@@ -2,10 +2,9 @@ import logging
 from flask import Flask, send_file, jsonify
 import os
 from datetime import datetime, timezone, timedelta
-import radar.fetch
-import radar.render
-import forecast.render
-import forecast.open_meteo
+from sources import nexrad_level2, open_meteo
+from components.radar.render import render as render_radar
+from components.forecast.render import render as render_forecast
 import frame.frame
 
 last_update = datetime(1970, 1, 1, tzinfo=timezone.utc)
@@ -27,7 +26,7 @@ def create(config):
 
         logger.info(f'last update: {last_update}')
 
-        latest = radar.fetch.latest_object(config)
+        latest = nexrad_level2.latest_object(config['radar']['nexrad_id'])
 
         if not latest:
             logger.info('no latest object')
@@ -44,12 +43,12 @@ def create(config):
             logger.info(f'fetching data for {latest.key} (modified at: {latest.last_modified})')
 
             # Radar
-            radar.fetch.fetch_radar(config, latest)
-            radar.render.render(config, False)
+            nexrad_level2.download(latest, to=config['files']['radar_raw'])
+            render_radar(config, False)
 
             # Forecast
-            current_conditions, forecast_data = forecast.open_meteo.fetch(config)
-            forecast.render.render_image(config, current_conditions, forecast_data)
+            res = open_meteo.get(open_meteo.Request.from_config(config))
+            render_forecast(config, res)
 
             # Combine
             frame.frame.create(config)

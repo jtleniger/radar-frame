@@ -2,21 +2,19 @@ from PIL import Image, ImageDraw, ImageFont
 import forecast.codes as codes
 import forecast.icon as icons
 
-from forecast.current import CurrentConditions
-from forecast.day import Day
+from sources import open_meteo
 from pytz import timezone
 from datetime import datetime, timezone as pytimezone
-from typing import List
 
-WHITE = '#FFF'
-BLACK = '#000'
+_WHITE = '#FFF'
+_BLACK = '#000'
 
 
 def get_font(size):
     return ImageFont.truetype("terminess.ttf", size)
 
 
-def render_image(config, current: CurrentConditions, forecast: List[Day]):
+def render(config, res: open_meteo.Response):
     frame_config = config['frame']
     file_config = config['files']
 
@@ -29,7 +27,7 @@ def render_image(config, current: CurrentConditions, forecast: List[Day]):
     small_icon_size = round(24 * scale)
 
     # Set up image
-    image = Image.new("RGBA", (width, height), WHITE)
+    image = Image.new("RGBA", (width, height), _WHITE)
     draw = ImageDraw.Draw(image)
 
     # Disables antialiasing
@@ -45,29 +43,30 @@ def render_image(config, current: CurrentConditions, forecast: List[Day]):
 
     # Draw current conditions
     y = 16
-    draw.text((width / 2 + 12, y), f"{str(round(current.temp_f))}°", font=fonts['large'], fill=BLACK, anchor="mt")
+    draw.text((width / 2 + 12, y), f"{str(round(res.current_conditions.temp_f))}°",
+              font=fonts['large'], fill=_BLACK, anchor="mt")
     y += round(72 * scale)
 
     now_utc = datetime.now(tz=pytimezone.utc)
     local_tz = timezone(config['forecast']['timezone'])
     now_local = now_utc.astimezone(local_tz)
 
-    icon = codes.code_to_img(current.code, current.is_night(now_local), large_icon_size)
+    icon = codes.code_to_img(res.current_conditions.code, res.current_conditions.is_night(now_local), large_icon_size)
     image.paste(icon, ((width // 2) - round(48 * scale), y - round(24 * scale)), icon)
     y += round(64 * scale)
 
     draw.text((width / 2, y),
-              f"{(codes.code_to_string(current.code))}", font=fonts['small'], fill=BLACK, anchor="mt")
+              f"{(codes.code_to_string(res.current_conditions.code))}", font=fonts['small'], fill=_BLACK, anchor="mt")
 
     # Draw 5-day forecast
     y += round(52 * scale)
-    for day in forecast[:5]:
+    for day in res.forecast.days[:5]:
         x = 24
 
-        draw.line([(36, y - round(10 * scale)), (width - 36, y - round(10 * scale))], fill=BLACK, width=1)
+        draw.line([(36, y - round(10 * scale)), (width - 36, y - round(10 * scale))], fill=_BLACK, width=1)
 
         # Day
-        draw.text((x, y + round(12 * scale)), f"{day.day}", font=fonts['xsmall'], fill=BLACK)
+        draw.text((x, y + round(12 * scale)), f"{day.day}", font=fonts['xsmall'], fill=_BLACK)
         x += round(72 * scale)
 
         # Icon
@@ -77,7 +76,7 @@ def render_image(config, current: CurrentConditions, forecast: List[Day]):
 
         # High & Low
         draw.text((x, y),
-                  f"{str(round(day.high_f)) + '°':>5} / {str(round(day.low_f)) + '°':>5}", font=fonts['xsmall'], fill=BLACK)
+                  f"{str(round(day.high_f)) + '°':>5} / {str(round(day.low_f)) + '°':>5}", font=fonts['xsmall'], fill=_BLACK)
 
         y += round(24 * scale)
         x = round(96 * scale)
@@ -87,7 +86,7 @@ def render_image(config, current: CurrentConditions, forecast: List[Day]):
         image.paste(icon, (x, y - round(2 * scale)), icon)
         x += round(26 * scale)
 
-        draw.text((x, y), f"{str(round(day.wind)) + ' mph':>7}", font=fonts['xsmall'], fill=BLACK)
+        draw.text((x, y), f"{str(round(day.wind)) + ' mph':>7}", font=fonts['xsmall'], fill=_BLACK)
         x += round(54 * scale)
 
         # Rain
@@ -95,15 +94,14 @@ def render_image(config, current: CurrentConditions, forecast: List[Day]):
         image.paste(icon, (x, y - round(2 * scale)), icon)
         x += round(20 * scale)
 
-        draw.text((x, y), f"{str(round(day.precip_sum, 1)) + ' in':>7}", font=fonts['xsmall'], fill=BLACK)
-        
+        draw.text((x, y), f"{str(round(day.precip_sum, 1)) + ' in':>7}", font=fonts['xsmall'], fill=_BLACK)
 
         y += round(32 * scale)
 
     # Draw line on RHS
     line_width = 2
     line_x = image.width - line_width
-    draw.line([(line_x, 0), (line_x, image.height)], fill=BLACK, width=line_width)
+    draw.line([(line_x, 0), (line_x, image.height)], fill=_BLACK, width=line_width)
 
     # Save image
     image.save(file_config['forecast_img'])
