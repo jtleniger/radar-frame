@@ -1,10 +1,9 @@
-from urllib.request import Request, urlopen
+import requests
 import json
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 
 from config.config import Config
-
 
 _BASE_URL = 'https://api.weather.gov/'
 
@@ -21,15 +20,14 @@ class RadarStatus:
 def radar_status():
     config = Config.instance()
 
-    req = Request(f"{_BASE_URL}radar/stations/{config['radar']['nexrad_id']}")
-    req.add_header('User-Agent', config['nws']['user_agent'])
+    url = f"{_BASE_URL}radar/stations/{config['radar']['nexrad_id']}"
+    
+    response = requests.get(url, headers={'User-Agent': config['nws']['user_agent']})
 
-    response = urlopen(req)
+    if response.status_code != 200:
+        raise Exception(response.text)
 
-    if response.status != 200:
-        raise response.msg
-
-    data = json.loads(response.read())
+    data = json.loads(response.json())
 
     raw_vcp = data['properties']['rda']['properties']['volumeCoveragePattern']
 

@@ -1,6 +1,6 @@
-from urllib.parse import urlencode
-from urllib.request import urlopen
 import json
+import requests
+from urllib.parse import urlencode
 from datetime import datetime
 from pytz import timezone
 from dataclasses import dataclass
@@ -88,12 +88,12 @@ def get(req: Request) -> Response:
     params['forecast_days'] = str(req.days)
     params['timezone'] = req.timezone
 
-    response = urlopen(f"{_BASE_URL}{urlencode(_BASE_PARAMS)}")
+    response = requests.get(f"{_BASE_URL}{urlencode(_BASE_PARAMS)}")
 
-    if response.status != 200:
-        raise Exception(response.msg)
+    if response.status_code != 200:
+        raise Exception(response.text)
 
-    data = json.loads(response.read())
+    data = json.loads(response.json())
 
     current = CurrentConditions(
         temp_f=data['current_weather']['temperature'],
