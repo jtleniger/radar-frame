@@ -50,7 +50,7 @@ class Request:
             timezone=config['forecast']['timezone'],
             latitude=float(config['forecast']['lat']),
             longitude=float(config['forecast']['lon']),
-            days=int(config['forecast']['days'])
+            days=5
         )
 
 
@@ -91,7 +91,7 @@ def get(req: Request) -> Response:
     response = urlopen(f"{_BASE_URL}{urlencode(_BASE_PARAMS)}")
 
     if response.status != 200:
-        raise response.msg
+        raise Exception(response.msg)
 
     data = json.loads(response.read())
 

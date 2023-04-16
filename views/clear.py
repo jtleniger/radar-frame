@@ -1,24 +1,26 @@
 from PIL import Image
 
-def render(config):
-    frame_config = config['frame']
-    palette_config = config['radar.palette']
-    file_config = config['files']
+from sources import open_meteo
+from components.forecast import components
 
-    width = int(frame_config['width'])
-    height = int(frame_config['height'])
+from constants import paths, frame
 
-    # Load images
-    forecast = Image.open(file_config['forecast_img'])
+def render(config, data: open_meteo.Response):
+    image = Image.new("RGB", (frame.WIDTH, frame.HEIGHT), "#FFF")
+
+    current = components.current_conditions(config, data)
+    image.paste(current, (0, (image.height // 2) - (current.height // 2)))
     
-    # Merge
-    merged = Image.new("RGB", (width, height))
+    y = 0
+    for d in data.forecast.days:
+        day = components.day(d)
+        image.paste(day, (current.width, y))
+        y += day.height
 
-    merged.paste(forecast)
 
     # Quantize image to color palette
-    palette = Image.open(file_config['palette_img'])
+    palette = Image.open(paths.PALETTE_IMG)
 
-    merged = merged.quantize(len(palette_config['colors']), palette=palette, dither=Image.Dither.NONE)
+    image = image.quantize(7, palette=palette, dither=Image.Dither.NONE)
 
-    merged.save(file_config['output_img'])
+    image.save(paths.OUTPUT_IMG)

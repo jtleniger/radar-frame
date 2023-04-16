@@ -1,72 +1,44 @@
 import argparse
-from setup import palette
+from setup import palette, streets
 from server import server
 from sources import nexrad_level2, open_meteo
-from components.radar.render import render as _render_radar
-from components.forecast.render import render as _render_forecast
+from modes.mode import Mode
 from config.config import Config
 import os
 import logging
 import logging.handlers
 
+from state.state import State
+from constants import paths
 
-def render(config, dry_run: bool):
-    """runs the full render process"""
-    logging.info('rendering frame image')
-    render_radar(config, dry_run)
-    render_forecast(config, dry_run)
-    combine_renders(config, dry_run)
-    logging.info('done')
+logger = logging.getLogger(__name__)
 
-
-def render_radar(config, dry_run: bool):
-    """renders an image from the latest radar data. if --dry-run is set, uses ./nexrad-test-data instead."""
-    if not dry_run:
-        latest = nexrad_level2.latest_object()
-
-        if not latest:
-            logging.error('could not fetch latest radar data')
-            return
-
-        nexrad_level2.download(latest, to=config['files']['radar_raw'])
-
-    _render_radar(config, dry_run)
+def render_clear():
+    Mode.Clear.run(State.instance(), Config.instance())
 
 
-
-def render_forecast(config, dry_run: bool):
-    """renders an image from the latest forecast data. if --dry-run is set, uses ./forecast-test-data instead."""
-    if not dry_run:
-        res = open_meteo.get(open_meteo.Request.from_config())
-
-        _render_forecast(config, res)
+def setup():
+    create_data_dir()
+    palette.create()
+    streets.create()
 
 
-def combine_renders(config, _: bool):
-    """creates a combined imaged from the outputs of render-radar and render-forecast"""
-    #frame.create(config)
-    pass
+def create_data_dir():
+    if not paths.DATA_DIR.is_dir():
+        logger.info(f'{paths.DATA_DIR} missing, creating it')
+        os.mkdir(paths.DATA_DIR)
+    else:
+        logger.info(f'{paths.DATA_DIR} exists')
 
 
-def create_palette(config, _: bool):
-    """creates the radar output color palette"""
-    palette.create(config)
-
-
-def create_data_dir(config):
-    data_dir = config['files']['dir']
-
-    if not os.path.isdir(data_dir):
-        os.mkdir(data_dir)
-
-
-def run_server(config, _: bool):
+def run_server():
     s = server.create()
     s.run()
 
 
-def setup_logs(config):
-    handler = logging.handlers.RotatingFileHandler(config['logging']['file'], maxBytes=100_000, backupCount=4)
+def setup_logs():
+    config = Config.instance()
+    handler = logging.handlers.RotatingFileHandler('radar-frame.log', maxBytes=100_000, backupCount=4)
     handler.setFormatter(logging.Formatter('{asctime} {levelname} {name} {filename}:{lineno} {message}', style='{'))
 
     logging.basicConfig(
@@ -76,16 +48,13 @@ def setup_logs(config):
 
 def create_server():
     """Helper to create a server to be used by Gunicorn."""
-    setup_logs(Config.instance())
+    setup_logs()
     return server.create()
 
 
 COMMANDS = {
-    'render': render,
-    'render-radar': render_radar,
-    'render-forecast': render_forecast,
-    'combine-renders': combine_renders,
-    'create-palette': create_palette,
+    'setup': setup,
+    'render-clear': render_clear,
     'run-server': run_server,
 }
 
@@ -104,11 +73,10 @@ def main():
 
     args = parser.parse_args()
 
-    setup_logs(Config.instance())
-    create_data_dir(Config.instance())
+    setup_logs()
 
     if args.command in COMMANDS:
-        COMMANDS[args.command](Config.instance(), args.dry_run)
+        COMMANDS[args.command]()
 
     else:
         parser.print_usage()

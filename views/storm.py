@@ -1,26 +1,21 @@
 from PIL import Image
 
+from constants import paths, frame
+
 def render(config):
-    frame_config = config['frame']
-    palette_config = config['radar.palette']
-    file_config = config['files']
-
-    width = int(frame_config['width'])
-    height = int(frame_config['height'])
-
     # Load images
-    forecast = Image.open(file_config['forecast_img'])
-    radar = Image.open(file_config['radar_img'])
+    forecast = Image.open(paths.FORECAST_IMG)
+    radar = Image.open(paths.RADAR_IMG)
 
     # Merge
-    merged = Image.new("RGB", (width, height))
+    merged = Image.new("RGB", (frame.WIDTH, frame.HEIGHT))
 
     merged.paste(forecast)
-    merged.paste(radar, (width - height, 0))
+    merged.paste(radar, (frame.WIDTH - frame.HEIGHT, 0))
 
     # Quantize image to color palette
-    palette = Image.open(file_config['palette_img'])
+    palette = Image.open(paths.PALETTE_IMG)
 
-    merged = merged.quantize(len(palette_config['colors']), palette=palette, dither=Image.Dither.NONE)
+    merged = merged.quantize(7, palette=palette, dither=Image.Dither.NONE)
 
-    merged.save(file_config['output_img'])
+    merged.save(paths.OUTPUT_IMG)
