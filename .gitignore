@@ -6,6 +6,7 @@ __pycache__
 config/config.ini
 
 # files
+bin/
 data/
 *.log
 radar-frame-arm.tar

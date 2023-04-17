@@ -1,22 +1,18 @@
-FROM python:3.8.10-alpine
+FROM ubuntu:latest
 
 WORKDIR /app
 
-RUN apk add build-base \
-    libffi-dev \
-    cairo \
-    libc6-compat \
-    freetype-dev \
-    fribidi-dev \
-    harfbuzz-dev \
-    jpeg-dev \
-    lcms2-dev \
-    libimagequant-dev \
-    openjpeg-dev \
-    tcl-dev \
-    tiff-dev \
-    tk-dev \
-    zlib-dev
+RUN apt-get update
+RUN apt-get install -y \
+    python3 \
+    python3-pip \
+    git \
+    gdal-bin \
+    libgdal-dev \
+    python3-gdal \
+    proj-bin \
+    proj-data \
+    libproj-dev
 
 COPY requirements.txt .
 
@@ -25,7 +21,19 @@ RUN pip install --prefer-binary -r requirements.txt
 
 COPY . .
 
-RUN python main.py create-palette
+COPY --from=golang:1.20.3 /usr/local/go /usr/local/go
+ENV PATH=$PATH:/usr/local/go/bin
+
+RUN git clone https://github.com/jtleniger/go-nexrad.git
+
+WORKDIR /app/go-nexrad
+
+RUN git checkout csv
+RUN go build -o ../bin/nexrad-csv-amd64 cmd/nexrad-csv/*
+
+WORKDIR /app
+
+RUN apt-get install -y libcairo2
 
 EXPOSE 8000
 

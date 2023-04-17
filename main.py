@@ -35,6 +35,7 @@ def create_data_dir():
 
 
 def run_server():
+    setup()
     s = server.create()
     s.run()
 
@@ -52,6 +53,7 @@ def setup_logs():
 def create_server():
     """Helper to create a server to be used by Gunicorn."""
     setup_logs()
+    setup()
     return server.create()
 
 

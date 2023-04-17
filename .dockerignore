@@ -1,8 +1,6 @@
 venv
-cache
 
 # files
 data/
 *.log
 Dockerfile
-radar-frame.tar
