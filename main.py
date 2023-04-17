@@ -1,7 +1,6 @@
 import argparse
 from setup import palette, streets
 from server import server
-from sources import nexrad_level2, open_meteo
 from modes.mode import Mode
 from config.config import Config
 import os
@@ -11,10 +10,14 @@ import logging.handlers
 from state.state import State
 from constants import paths
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 def render_clear():
-    Mode.Clear.run(State.instance(), Config.instance())
+    Mode.Clear.run(State.instance())
+
+
+def render_storm():
+    Mode.Storm.run(State.instance())
 
 
 def setup():
@@ -25,10 +28,10 @@ def setup():
 
 def create_data_dir():
     if not paths.DATA_DIR.is_dir():
-        logger.info(f'{paths.DATA_DIR} missing, creating it')
+        _logger.info(f'{paths.DATA_DIR} missing, creating it')
         os.mkdir(paths.DATA_DIR)
     else:
-        logger.info(f'{paths.DATA_DIR} exists')
+        _logger.info(f'{paths.DATA_DIR} exists')
 
 
 def run_server():
@@ -55,6 +58,7 @@ def create_server():
 COMMANDS = {
     'setup': setup,
     'render-clear': render_clear,
+    'render-storm': render_storm,
     'run-server': run_server,
 }
 

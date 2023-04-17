@@ -10,8 +10,8 @@ class State:
         self.radar_last_updated = datetime(1970, 1, 1, tzinfo=timezone.utc)
         self.mode = Mode.Storm
 
-    def run_mode(self, config):
-        self.mode.run(self, config)
+    def run_mode(self):
+        self.mode.run(self)
 
     @staticmethod
     def instance():

@@ -1,26 +1,30 @@
-from PIL import Image
+from PIL import Image, ImageDraw
+from typing import List
 
 from sources import open_meteo
 from components.forecast import components
-
 from constants import paths, frame
 
-def render(config, data: open_meteo.Response):
+
+def render(current: open_meteo.CurrentConditions, hourly: List[open_meteo.ForecastHour], daily: List[open_meteo.ForecastDay]):
     image = Image.new("RGB", (frame.WIDTH, frame.HEIGHT), "#FFF")
 
-    current = components.current_conditions(config, data)
-    image.paste(current, (0, (image.height // 2) - (current.height // 2)))
-    
-    y = 0
-    for d in data.forecast.days:
-        day = components.day(d)
-        image.paste(day, (current.width, y))
-        y += day.height
+    left_column_width = frame.WIDTH - frame.HEIGHT
 
+    draw = ImageDraw.Draw(image)
 
-    # Quantize image to color palette
+    draw.line(((left_column_width - 32, 32), (left_column_width - 32, frame.HEIGHT - 60)), '#000', 1)
+
+    current_img = components.current_conditions(current)
+    image.paste(current_img, ((left_column_width - current_img.width) // 2 - 16, 16))
+
+    hourly_img = components.hourly_forecast(hourly)
+    image.paste(hourly_img, (42, current_img.height))
+ 
+    daily_img = components.daily_forecast(daily)
+    image.paste(daily_img, (left_column_width, 16))
+
     palette = Image.open(paths.PALETTE_IMG)
-
     image = image.quantize(7, palette=palette, dither=Image.Dither.NONE)
 
     image.save(paths.OUTPUT_IMG)

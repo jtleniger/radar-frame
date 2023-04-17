@@ -7,13 +7,13 @@ class Mode(Enum):
     Storm = auto()
     Clear = auto()
 
-    def run(self, state, config):
+    def run(self, state):
         if self is Mode.Storm:
-            storm.run(state, config)
+            storm.run(state)
             return
         
         if self is Mode.Clear:
-            clear.run(state, config)
+            clear.run(state)
             return
         
         raise Exception('unexpected mode')

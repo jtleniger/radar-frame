@@ -1,100 +1,133 @@
 from PIL import Image, ImageDraw, ImageFont
+from typing import List
+from constants import frame
+
 import components.forecast.codes as codes
 import components.forecast.icon as icons
-
 from sources import open_meteo
-from pytz import timezone
-from datetime import datetime, timezone as pytimezone
-
-from constants import paths, frame
 
 _WHITE = '#FFF'
 _BLACK = '#000'
 
 
-def get_font(size):
+def _get_font(size):
     return ImageFont.truetype("terminess.ttf", size)
 
-_FONTS =  {
-    'xsmall': get_font(round(14)),
-    'small': get_font(round(32)),
-    'medium': get_font(round(48)),
-    'large': get_font(round(64))
+
+_FONTS = {
+    'xsmall': _get_font(round(22)),
+    'small': _get_font(round(32)),
+    'medium': _get_font(round(48)),
+    'large': _get_font(round(64))
 }
 
 
-def current_conditions(config, res: open_meteo.Response):
-    image = Image.new("RGBA", (190, 190), _WHITE)
+def current_conditions(current: open_meteo.CurrentConditions) -> Image.Image:
+    image = Image.new("RGBA", (190, 200), _WHITE)
 
     draw = ImageDraw.Draw(image)
-    # Disables antialiasing
-    draw.fontmode = '1'  # type: ignore
-
-    y = 16
-    draw.text((image.width / 2 + 12, y), f"{str(round(res.current_conditions.temp_f))}°",
-              font=_FONTS['large'], fill=_BLACK, anchor="mt")
-    y += round(72)
-
-    now_utc = datetime.now(tz=pytimezone.utc)
-    local_tz = timezone(config['forecast']['timezone'])
-    now_local = now_utc.astimezone(local_tz)
-
-    icon = codes.code_to_img(res.current_conditions.code, res.current_conditions.is_night(now_local), 96)
-    image.paste(icon, ((image.width // 2) - 48, y - 24), icon)
-    y += 64
-
-    draw.text((image.width / 2, y),
-              f"{(codes.code_to_string(res.current_conditions.code))}", font=_FONTS['small'], fill=_BLACK, anchor="mt")
-    
-    return image
-
-def day(day: open_meteo.ForecastDay):
-    image = Image.new("RGBA", (320, 56), _WHITE)
-    draw = ImageDraw.Draw(image)
-
     # Disables antialiasing
     draw.fontmode = '1'  # type: ignore
 
     y = 0
+    draw.text((image.width / 2 + 12, y), f"{str(round(current.temp_f))}°",
+              font=_FONTS['large'], fill=_BLACK, anchor="mt")
+    y += 72
 
-    draw.line([36, y, (image.width - 36, y)], fill=_BLACK, width=1)
+    icon = codes.code_to_img(current.code, not current.is_day, 96)
+    image.paste(icon, ((image.width // 2) - 48, y - 24), icon)
+    y += 64
 
-    y += 12
+    draw.text((image.width / 2, y),
+              f"{(codes.code_to_string(current.code))}", font=_FONTS['small'], fill=_BLACK, anchor="mt")
 
-    x = 96
+    return image
 
-    # Icon
-    icon = codes.code_to_img(day.code, False, 32)
-    image.paste(icon, (x, y - 8), icon)
 
-    x += 26
+def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
+    image = Image.new("RGBA", (frame.HEIGHT, 60), _WHITE)
+    draw = ImageDraw.Draw(image)
 
-    # High & Low
-    draw.text((x, y),
-                f"{str(round(day.high_f)) + '°':>5} / {str(round(day.low_f)) + '°':>5}", font=_FONTS['xsmall'], fill=_BLACK)
+    # Disables antialiasing
+    draw.fontmode = '1'  # type: ignore
 
-    y += 12
-    x = 24
+    x = 0
 
     # Day
-    draw.text((x, y), f"{day.day}", font=_FONTS['xsmall'], fill=_BLACK)
+    draw.text((x, 8), f"{day.day}", font=_FONTS['small'], fill=_BLACK)
 
-    y += 12
-    x = 96
+    x += 72
+
+    # Icon
+    icon = codes.code_to_img(day.code, False, 48)
+    image.paste(icon, (x, 8), icon)
+
+    x += 64
+
+    # High & Low
+    draw.text((x, 8),
+              f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}", font=_FONTS['small'], fill=_BLACK)
+
+    x += 192
 
     # Wind
-    icon = icons.get_icon_as_png('wi-strong-wind', 24)
-    image.paste(icon, (x, y - 2), icon)
-    x += 26
+    icon = icons.get_icon_as_png('wi-strong-wind', 32)
+    image.paste(icon, (x, 0), icon)
 
-    draw.text((x, y), f"{str(round(day.wind)) + ' mph':>7}", font=_FONTS['xsmall'], fill=_BLACK)
-    x += 54
+    draw.text((x + 32, 0), f"{str(round(day.wind_mph)):>3}" + "mph", font=_FONTS['xsmall'], fill=_BLACK)
 
     # Rain
-    icon = icons.get_icon_as_png('wi-raindrop', 24)
-    image.paste(icon, (x, y - 2), icon)
-    x += 20
+    icon = icons.get_icon_as_png('wi-raindrop', 32)
+    image.paste(icon, (x, 24), icon)
 
-    draw.text((x, y), f"{str(round(day.precip_sum, 1)) + ' in':>7}", font=_FONTS['xsmall'], fill=_BLACK)
+    draw.text((x + 48, 24), f"{str(round(day.precip_sum, 1)):>4}" + '"', font=_FONTS['xsmall'], fill=_BLACK)
+
+    return image
+
+
+def daily_forecast(days: List[open_meteo.ForecastDay]) -> Image.Image:
+    image = Image.new("RGBA", (frame.HEIGHT, 60 * len(days)), _WHITE)
+
+    y = 0
+    for d in days:
+        day = forecast_day(d)
+        image.paste(day, (0, y))
+        y += day.height
+
+    return image
+
+
+def forecast_hour(hour: open_meteo.ForecastHour) -> Image.Image:
+    image = Image.new("RGBA", (220, 48), _WHITE)
+
+    draw = ImageDraw.Draw(image)
+
+    # Disables antialiasing
+    draw.fontmode = '1'  # type: ignore
+
+    x = 0
+
+    draw.text((x, 0), hour.hour, font=_FONTS['small'], fill=_BLACK)
+
+    x += 84
+
+    icon = codes.code_to_img(hour.code, False, 40)
+    image.paste(icon, (x, 0), icon)
+
+    x += 60
+
+    draw.text((x, 0), f"{str(round(hour.temp_f)) + '°':>4}", font=_FONTS['small'], fill=_BLACK)
+
+    return image
+
+
+def hourly_forecast(hours: List[open_meteo.ForecastHour]) -> Image.Image:
+    image = Image.new("RGBA", (220, 48 * len(hours)), _WHITE)
+
+    y = 0
+    for h in hours:
+        hour = forecast_hour(h)
+        image.paste(hour, (0, y))
+        y += hour.height
 
     return image

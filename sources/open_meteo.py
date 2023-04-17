@@ -1,12 +1,15 @@
-import json
 import requests
 from urllib.parse import urlencode
 from datetime import datetime
 from pytz import timezone
+from datetime import datetime, timezone as pytimezone
 from dataclasses import dataclass
 from typing import List
+import logging
 
 from config.config import Config
+
+_logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -14,11 +17,7 @@ class CurrentConditions:
     temp_f: float
     wind_mph: int
     code: int
-    sunrise_local: datetime
-    sunset_local: datetime
-
-    def is_night(self, now_local: datetime):
-        return now_local < self.sunrise_local or now_local > self.sunset_local
+    is_day: bool
 
 
 @dataclass
@@ -27,40 +26,24 @@ class ForecastDay:
     high_f: float
     low_f: float
     precip_sum: float
-    wind: float
+    wind_mph: float
     code: int
 
 
 @dataclass
-class Forecast:
-    days: List[ForecastDay]
+class ForecastHour:
+    hour: str
+    temp_f: float
+    code: int
 
 
-@dataclass
-class Request:
-    timezone: str
-    latitude: float
-    longitude: float
-    days: int
+_CURRENT_PARAMS = {
+    'current_weather': 'true',
+    'temperature_unit': 'fahrenheit',
+    'windspeed_unit': 'mph'
+}
 
-    @staticmethod
-    def from_config():
-        config = Config.instance()
-        return Request(
-            timezone=config['forecast']['timezone'],
-            latitude=float(config['forecast']['lat']),
-            longitude=float(config['forecast']['lon']),
-            days=5
-        )
-
-
-@dataclass
-class Response:
-    current_conditions: CurrentConditions
-    forecast: Forecast
-
-
-_BASE_PARAMS = {
+_DAILY_PARAMS = {
     'daily': ','.join([
         'weathercode',
         'temperature_2m_max',
@@ -70,50 +53,98 @@ _BASE_PARAMS = {
         'sunrise',
         'sunset'
     ]),
-    'current_weather': 'true',
     'temperature_unit': 'fahrenheit',
     'windspeed_unit': 'mph',
     'precipitation_unit': 'inch'
 }
 
+_HOURLY_PARAMS = {
+    'hourly': ','.join([
+        'weathercode',
+        'temperature_2m',
+        'windspeed_10m'
+    ]),
+    'temperature_unit': 'fahrenheit',
+    'windspeed_unit': 'mph',
+    'precipitation_unit': 'inch',
+    'forecast_days': 2
+}
+
 _BASE_URL = 'https://api.open-meteo.com/v1/forecast?'
 
 
-def get(req: Request) -> Response:
-    local_tz = timezone(req.timezone)
+def _get(params):
+    config = Config.instance()
 
-    params = _BASE_PARAMS
-    params['latitude'] = str(req.latitude)
-    params['longitude'] = str(req.longitude)
-    params['forecast_days'] = str(req.days)
-    params['timezone'] = req.timezone
+    params['latitude'] = config['forecast']['lat']
+    params['longitude'] = config['forecast']['lon']
+    params['timezone'] = config['forecast']['timezone']
 
-    response = requests.get(f"{_BASE_URL}{urlencode(_BASE_PARAMS)}")
+    url = f"{_BASE_URL}{urlencode(params)}"
+    _logger.info(f'url: {url}')
+    response = requests.get(url)
 
     if response.status_code != 200:
         raise Exception(response.text)
 
-    data = json.loads(response.json())
+    return response.json()
 
-    current = CurrentConditions(
+
+def current():
+    data = _get(_CURRENT_PARAMS.copy())
+    return CurrentConditions(
         temp_f=data['current_weather']['temperature'],
         wind_mph=data['current_weather']['windspeed'],
         code=data['current_weather']['weathercode'],
-        sunrise_local=local_tz.localize(datetime.fromisoformat(data['daily']['sunrise'][0])),
-        sunset_local=local_tz.localize(datetime.fromisoformat(data['daily']['sunset'][0])))
+        is_day=data['current_weather']['is_day'] == 1)
 
-    forecast = Forecast([])
+
+def hourly():
+    config = Config.instance()
+
+    now_utc = datetime.now(tz=pytimezone.utc)
+    local_tz = timezone(config['forecast']['timezone'])
+    now_local = now_utc.astimezone(local_tz)
+    now_local_hour = now_local.replace(minute=0, second=0, microsecond=0)
+
+    data = _get(_HOURLY_PARAMS.copy())
+
+    forecast = []
+
+    for i in range(len(data['hourly']['time'])):
+        if len(forecast) > 4:
+            break
+
+        time = datetime.fromisoformat(data['hourly']['time'][i]) # '%Y-%m-%dT%H:%M'
+        time = local_tz.localize(time)
+
+        if time < now_local_hour:
+            continue
+
+        forecast.append(ForecastHour(
+            hour=time.strftime('%-I%p').lower(),
+            temp_f=data['hourly']['temperature_2m'][i],
+            code=data['hourly']['weathercode'][i],
+        ))
+
+    forecast[0].hour = 'now'
+
+    return forecast
+
+
+def daily() -> List[ForecastDay]:
+    data = _get(_DAILY_PARAMS.copy())
+
+    forecast = []
 
     for i in range(len(data['daily']['time'])):
-        forecast.days.append(ForecastDay(
+        forecast.append(ForecastDay(
             day=datetime.strptime(data['daily']['time'][i], '%Y-%m-%d').strftime('%a').lower(),
             high_f=data['daily']['temperature_2m_max'][i],
             low_f=data['daily']['temperature_2m_min'][i],
             precip_sum=data['daily']['precipitation_sum'][i],
-            wind=data['daily']['windspeed_10m_max'][i],
+            wind_mph=data['daily']['windspeed_10m_max'][i],
             code=data['daily']['weathercode'][i],
         ))
 
-    forecast.days[0].day = 'today'
-
-    return Response(current, forecast)
+    return forecast

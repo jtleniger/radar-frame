@@ -5,7 +5,7 @@ from config.config import Config
 from sources import osm
 from constants import frame, paths
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 def generate_png():
     config = Config.instance()
@@ -21,26 +21,26 @@ def generate_png():
     cmd += '-burn 255 -ot byte -l lines -a_nodata 1 '
     cmd += f'{paths.STREETS_DATA} {paths.STREETS_TIF}'
 
-    logger.info('rasterize command:')
-    logger.info(cmd)
+    _logger.info('rasterize command:')
+    _logger.info(cmd)
 
     exit_code = os.system(cmd)
 
     if exit_code != 0:
         ex = Exception('could not rasterize osm data')
-        logger.error(ex)
+        _logger.error(ex)
         raise ex
     
     cmd = f'gdal_translate -of PNG {paths.STREETS_TIF} {paths.STREETS_IMG}'
 
-    logger.info('convert to png command:')
-    logger.info(cmd)
+    _logger.info('convert to png command:')
+    _logger.info(cmd)
 
     exit_code = os.system(cmd)
 
     if exit_code != 0:
         ex = Exception('could not rasterize osm data')
-        logger.error(ex)
+        _logger.error(ex)
         raise ex
 
 def create():
@@ -48,14 +48,14 @@ def create():
     data_exists = paths.STREETS_DATA.exists()
 
     if img_exists:
-        logger.info(f'{paths.STREETS_IMG} already exists, doing nothing')
+        _logger.info(f'{paths.STREETS_IMG} already exists, doing nothing')
         return
     
     if data_exists and not img_exists:
-        logger.info(f'{paths.STREETS_DATA} exists, generating png')
+        _logger.info(f'{paths.STREETS_DATA} exists, generating png')
         generate_png()
     
     if not data_exists:
-        logger.info(f'{paths.STREETS_DATA} missing, downloading data and generating png')
+        _logger.info(f'{paths.STREETS_DATA} missing, downloading data and generating png')
         osm.get()
         generate_png()
