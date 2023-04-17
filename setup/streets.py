@@ -3,7 +3,7 @@ import os.path
 
 from config.config import Config
 from sources import osm
-from constants import frame, paths
+from constants import paths, radar
 
 _logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ def generate_png():
 
     cmd = 'gdal_rasterize --config OSM_USE_CUSTOM_INDEXING NO -te '
     cmd += f'{min_lon} {min_lat} {max_lon} {max_lat} '
-    cmd += f'-ts {frame.HEIGHT} {frame.HEIGHT} '
+    cmd += f'-ts {radar.WIDTH} {radar.HEIGHT} '
     cmd += '-burn 255 -ot byte -l lines -a_nodata 1 '
     cmd += f'{paths.STREETS_DATA} {paths.STREETS_TIF}'
 

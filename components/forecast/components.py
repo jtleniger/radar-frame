@@ -1,29 +1,15 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 from typing import List
-from constants import frame
+from constants import frame, colors
 
 import components.forecast.codes as codes
 import components.forecast.icon as icons
+from components.font import font
 from sources import open_meteo
-
-_WHITE = '#FFF'
-_BLACK = '#000'
-
-
-def _get_font(size):
-    return ImageFont.truetype("terminess.ttf", size)
-
-
-_FONTS = {
-    'xsmall': _get_font(round(22)),
-    'small': _get_font(round(32)),
-    'medium': _get_font(round(48)),
-    'large': _get_font(round(64))
-}
 
 
 def current_conditions(current: open_meteo.CurrentConditions) -> Image.Image:
-    image = Image.new("RGBA", (190, 200), _WHITE)
+    image = Image.new("RGBA", (192, 192), colors.WHITE)
 
     draw = ImageDraw.Draw(image)
     # Disables antialiasing
@@ -31,7 +17,7 @@ def current_conditions(current: open_meteo.CurrentConditions) -> Image.Image:
 
     y = 0
     draw.text((image.width / 2 + 12, y), f"{str(round(current.temp_f))}°",
-              font=_FONTS['large'], fill=_BLACK, anchor="mt")
+              font=font.SIZES[font.Size.Large], fill=colors.BLACK, anchor="mt")
     y += 72
 
     icon = codes.code_to_img(current.code, not current.is_day, 96)
@@ -39,13 +25,13 @@ def current_conditions(current: open_meteo.CurrentConditions) -> Image.Image:
     y += 64
 
     draw.text((image.width / 2, y),
-              f"{(codes.code_to_string(current.code))}", font=_FONTS['small'], fill=_BLACK, anchor="mt")
+              f"{(codes.code_to_string(current.code))}", font=font.SIZES[font.Size.Small], fill=colors.BLACK, anchor="mt")
 
     return image
 
 
 def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
-    image = Image.new("RGBA", (frame.HEIGHT, 60), _WHITE)
+    image = Image.new("RGBA", (frame.HEIGHT, 60), colors.WHITE)
     draw = ImageDraw.Draw(image)
 
     # Disables antialiasing
@@ -54,7 +40,7 @@ def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
     x = 0
 
     # Day
-    draw.text((x, 8), f"{day.day}", font=_FONTS['small'], fill=_BLACK)
+    draw.text((x, 8), f"{day.day}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
 
     x += 72
 
@@ -66,7 +52,7 @@ def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
 
     # High & Low
     draw.text((x, 8),
-              f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}", font=_FONTS['small'], fill=_BLACK)
+              f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
 
     x += 192
 
@@ -74,19 +60,19 @@ def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
     icon = icons.get_icon_as_png('wi-strong-wind', 32)
     image.paste(icon, (x, 0), icon)
 
-    draw.text((x + 32, 0), f"{str(round(day.wind_mph)):>3}" + "mph", font=_FONTS['xsmall'], fill=_BLACK)
+    draw.text((x + 32, 0), f"{str(round(day.wind_mph)):>3}" + "mph", font=font.SIZES[font.Size.XSmall], fill=colors.BLACK)
 
     # Rain
     icon = icons.get_icon_as_png('wi-raindrop', 32)
     image.paste(icon, (x, 24), icon)
 
-    draw.text((x + 48, 24), f"{str(round(day.precip_sum, 1)):>4}" + '"', font=_FONTS['xsmall'], fill=_BLACK)
+    draw.text((x + 48, 24), f"{str(round(day.precip_sum, 1)):>4}" + '"', font=font.SIZES[font.Size.XSmall], fill=colors.BLACK)
 
     return image
 
 
 def daily_forecast(days: List[open_meteo.ForecastDay]) -> Image.Image:
-    image = Image.new("RGBA", (frame.HEIGHT, 60 * len(days)), _WHITE)
+    image = Image.new("RGBA", (frame.HEIGHT, 60 * len(days)), colors.WHITE)
 
     y = 0
     for d in days:
@@ -98,7 +84,7 @@ def daily_forecast(days: List[open_meteo.ForecastDay]) -> Image.Image:
 
 
 def forecast_hour(hour: open_meteo.ForecastHour) -> Image.Image:
-    image = Image.new("RGBA", (220, 48), _WHITE)
+    image = Image.new("RGBA", (220, 48), colors.WHITE)
 
     draw = ImageDraw.Draw(image)
 
@@ -107,7 +93,7 @@ def forecast_hour(hour: open_meteo.ForecastHour) -> Image.Image:
 
     x = 0
 
-    draw.text((x, 0), hour.hour, font=_FONTS['small'], fill=_BLACK)
+    draw.text((x, 0), hour.hour, font=font.SIZES[font.Size.Small], fill=colors.BLACK)
 
     x += 84
 
@@ -116,13 +102,13 @@ def forecast_hour(hour: open_meteo.ForecastHour) -> Image.Image:
 
     x += 60
 
-    draw.text((x, 0), f"{str(round(hour.temp_f)) + '°':>4}", font=_FONTS['small'], fill=_BLACK)
+    draw.text((x, 0), f"{str(round(hour.temp_f)) + '°':>4}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
 
     return image
 
 
 def hourly_forecast(hours: List[open_meteo.ForecastHour]) -> Image.Image:
-    image = Image.new("RGBA", (220, 48 * len(hours)), _WHITE)
+    image = Image.new("RGBA", (220, 48 * len(hours)), colors.WHITE)
 
     y = 0
     for h in hours:

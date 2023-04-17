@@ -1,6 +1,6 @@
 import logging
 
-from sources import nexrad_level2, open_meteo
+from sources import nexrad_level2, open_meteo, nws_api
 from components.radar.render import render as render_radar
 
 from typing import TYPE_CHECKING
@@ -28,5 +28,6 @@ def run(state: "State"):
 
     current = open_meteo.current()
     hourly = open_meteo.hourly()
+    alerts = nws_api.alerts()
 
-    storm.render(current, hourly)
+    storm.render(current, hourly, alerts)

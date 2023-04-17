@@ -1,8 +1,10 @@
 from typing import List
+from urllib.parse import urlencode
 import requests
 import re
 from dataclasses import dataclass
 import logging
+from enum import Enum, auto
 
 from config.config import Config
 
@@ -20,10 +22,48 @@ class RadarStatus:
         return self.vcp in [31, 32, 35]
 
 
-def alerts() -> List[str]:
+class AlertLevel(Enum):
+    Info = auto()
+    Watch = auto()
+    Warning = auto()
+    Emergency = auto()
+
+
+@dataclass
+class Alert:
+    event: str
+    level: AlertLevel
+
+    @staticmethod
+    def from_dict(alert):
+        urgency = alert['urgency'].lower()
+        severity = alert['severity'].lower()
+        certainty = alert['certainty'].lower()
+
+        if urgency == 'future' and severity in ['extreme', 'severe', 'moderate'] and certainty == 'possible':
+            level = AlertLevel.Watch
+        elif urgency in ['immediate', 'expected'] and certainty in ['likely', 'observed'] and severity in ['extreme', 'severe']:
+            if severity == 'extreme':
+                level = AlertLevel.Emergency
+            else:
+                level = AlertLevel.Warning
+        else:
+            level = AlertLevel.Info
+
+        return Alert(
+            event=alert['event'].lower(),
+            level=level
+        )
+
+
+def alerts() -> List[Alert]:
     config = Config.instance()
 
-    url = f"{_BASE_URL}alerts/active/zone/{config['nws']['zone']}"
+    params = {
+        'zone': f"{config['nws']['zone']},{config['nws']['fire_zone']}"
+    }
+
+    url = f"{_BASE_URL}alerts/active?{urlencode(params)}"
 
     _logger.info(url)
 
@@ -34,7 +74,7 @@ def alerts() -> List[str]:
 
     data = response.json()
 
-    return [ alert['event'].lower() for alert in data['features'] ]
+    return [Alert.from_dict(alert['properties']) for alert in data['features'] if alert['properties']['status'].lower() == 'actual']
 
 
 def radar_status() -> RadarStatus:

@@ -3,7 +3,7 @@ from PIL import Image
 import logging
 from config.config import Config
 
-from constants import paths, frame
+from constants import paths, radar, colors
 
 _logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def render():
     # Rasterize
     cmd = 'gdal_rasterize -3d -ot byte -te '
     cmd += f'{min_lon} {min_lat} {max_lon} {max_lat} '
-    cmd += f'-ts {frame.HEIGHT} {frame.HEIGHT} '
+    cmd += f'-ts {radar.WIDTH} {radar.HEIGHT} '
     cmd += f'{paths.RADAR_SHP} {paths.RADAR_TIF}'
     cmds.append(cmd)
 
@@ -64,9 +64,9 @@ def render():
     for cmd in cmds:
         _run_and_check(cmd)
 
-    image = Image.new('RGBA', (frame.HEIGHT, frame.HEIGHT), '#000')
-    radar = Image.open(paths.RADAR_IMG)
+    image = Image.new('RGBA', (radar.WIDTH, radar.HEIGHT), colors.BLACK)
+    radar_img = Image.open(paths.RADAR_IMG)
     streets = Image.open(paths.STREETS_IMG)
-    image.paste(radar, (0, 0), radar)
+    image.paste(radar_img, (0, 0), radar_img)
     image.paste(streets, (0, 0), streets)
     image.save(paths.RADAR_IMG)

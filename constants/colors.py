@@ -1,0 +1,7 @@
+WHITE = '#FFF'
+BLACK = '#000'
+RED = '#F00'
+GREEN = '#0F0'
+BLUE = '#00F'
+YELLOW = '#FF0'
+ORANGE = '#FF8000'
