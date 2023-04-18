@@ -44,9 +44,16 @@ class Alert:
         severity = alert['severity'].lower()
         certainty = alert['certainty'].lower()
 
-        if urgency == 'future' and severity in ['extreme', 'severe', 'moderate'] and certainty == 'possible':
+        if (urgency == 'future' and
+            severity in ['extreme', 'severe', 'moderate']
+            and certainty == 'possible'):
+
             level = AlertLevel.Watch
-        elif urgency in ['immediate', 'expected'] and certainty in ['likely', 'observed'] and severity in ['extreme', 'severe']:
+
+        elif (urgency in ['immediate', 'expected'] and
+              certainty in ['likely', 'observed'] and
+              severity in ['extreme', 'severe']):
+            
             if severity == 'extreme':
                 level = AlertLevel.Emergency
             else:

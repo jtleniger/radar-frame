@@ -42,8 +42,13 @@ def run_server():
 
 def setup_logs():
     config = Config.instance()
-    handler = logging.handlers.RotatingFileHandler('radar-frame.log', maxBytes=100_000, backupCount=4)
-    handler.setFormatter(logging.Formatter('{asctime} {levelname} {name} {filename}:{lineno} {message}', style='{'))
+    handler = logging.handlers.RotatingFileHandler('radar-frame.log',
+                                                   maxBytes=100_000,
+                                                   backupCount=4)
+    
+    handler.setFormatter(
+        logging.Formatter('{asctime} {levelname} {name} {filename}:{lineno} {message}',
+        style='{'))
 
     logging.basicConfig(
         handlers=[handler],
@@ -75,7 +80,6 @@ def main():
     )
 
     parser.add_argument('command', help=f'one of {", ".join(COMMANDS.keys())}')
-    parser.add_argument('-d', '--dry-run', action='store_true', help="don't download data, just use test data")
 
     args = parser.parse_args()
 

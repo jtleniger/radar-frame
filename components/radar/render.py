@@ -33,7 +33,8 @@ def render():
     cmds.append(cmd)
     
     # Convert CSV to shapefile
-    cmd = 'ogr2ogr -oo X_POSSIBLE_NAMES=longitude -oo Y_POSSIBLE_NAMES=latitude -oo Z_POSSIBLE_NAMES=value '
+    cmd = 'ogr2ogr -oo X_POSSIBLE_NAMES=longitude '
+    cmd += '-oo Y_POSSIBLE_NAMES=latitude -oo Z_POSSIBLE_NAMES=value '
     cmd += f'{paths.RADAR_SHP} {paths.RADAR_CSV}'
     cmds.append(cmd)
 
@@ -54,7 +55,8 @@ def render():
     #cmds.append(cmd)
 
     # Colorize
-    cmd = f'gdaldem color-relief {paths.RADAR_TIF} gdal-colors.txt -alpha -nearest_color_entry {paths.RADAR_TIF}'
+    cmd = f'gdaldem color-relief {paths.RADAR_TIF} '
+    cmd += 'gdal-colors.txt -alpha -nearest_color_entry {paths.RADAR_TIF}'
     cmds.append(cmd)
 
     # Convert to PNG

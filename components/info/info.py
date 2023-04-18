@@ -1,6 +1,5 @@
 from PIL import Image, ImageDraw
 from typing import List
-from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timezone as pytimezone
 
@@ -29,7 +28,9 @@ _ALERT_COLORS = {
 }
 
 def alert_active(alert: Alert, now_local: datetime) -> bool:
-    return alert.status == 'actual' and now_local > alert.effective and now_local < alert.expires
+    return (alert.status == 'actual'and
+        now_local > alert.effective and
+        now_local < alert.expires)
 
 
 def render(alerts: List[Alert]) -> Image.Image:
@@ -41,7 +42,11 @@ def render(alerts: List[Alert]) -> Image.Image:
     local_tz = timezone(config['forecast']['timezone'])
     now_local = now_utc.astimezone(local_tz)
 
-    draw.text((image.width - 18, image.height // 2 - 2), f"updated: {now_local.strftime('%-I:%M%p')}", font=font.SIZES[font.Size.Small], fill=colors.WHITE, anchor="rm")
+    draw.text((image.width - 18, image.height // 2 - 2),
+              f"updated: {now_local.strftime('%-I:%M%p')}",
+              font=font.SIZES[font.Size.Small],
+              fill=colors.WHITE,
+              anchor="rm")
 
     if not alerts:
         return image
@@ -60,7 +65,12 @@ def render(alerts: List[Alert]) -> Image.Image:
     if count > 1:
         alert_text += f' and {count - 1} others'
 
-    draw.rectangle(((0, 0), (5 * (frame.WIDTH) // 8, info.HEIGHT)), fill=alert_colors['bg'])
-    draw.text((18, image.height // 2 - 2), alert_text, font=font.SIZES[font.Size.Small], fill=alert_colors['fg'], anchor='lm')
+    draw.rectangle(((0, 0), (5 * (frame.WIDTH) // 8, info.HEIGHT)),
+                   fill=alert_colors['bg'])
+    
+    draw.text((18, image.height // 2 - 2),
+              alert_text, font=font.SIZES[font.Size.Small],
+              fill=alert_colors['fg'],
+              anchor='lm')
 
     return image

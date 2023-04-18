@@ -1,6 +1,5 @@
 import requests
 from urllib.parse import urlencode
-from datetime import datetime
 from pytz import timezone
 from datetime import datetime, timezone as pytimezone
 from dataclasses import dataclass
@@ -126,7 +125,9 @@ def daily() -> List[ForecastDay]:
 
     for i in range(len(data['daily']['time'])):
         forecast.append(ForecastDay(
-            day=datetime.strptime(data['daily']['time'][i], '%Y-%m-%d').strftime('%a').lower(),
+            day=datetime
+                .strptime(data['daily']['time'][i], '%Y-%m-%d')
+                .strftime('%a').lower(),
             high_f=data['daily']['temperature_2m_max'][i],
             low_f=data['daily']['temperature_2m_min'][i],
             code=data['daily']['weathercode'][i],

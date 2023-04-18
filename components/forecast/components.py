@@ -3,7 +3,6 @@ from typing import List
 from constants import frame, colors
 
 import components.forecast.codes as codes
-import components.forecast.icon as icons
 from components.font import font
 from sources import open_meteo
 
@@ -25,7 +24,9 @@ def current_conditions(current: open_meteo.CurrentConditions) -> Image.Image:
     y += 64
 
     draw.text((image.width / 2, y),
-              f"{(codes.code_to_string(current.code))}", font=font.SIZES[font.Size.Small], fill=colors.BLACK, anchor="mt")
+              f"{(codes.code_to_string(current.code))}",
+              font=font.SIZES[font.Size.Small],
+              fill=colors.BLACK, anchor="mt")
 
     return image
 
@@ -52,7 +53,9 @@ def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
 
     # High & Low
     draw.text((x, 8),
-              f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
+              f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}",
+              font=font.SIZES[font.Size.Small],
+              fill=colors.BLACK)
 
     return image
 
@@ -88,7 +91,10 @@ def forecast_hour(hour: open_meteo.ForecastHour) -> Image.Image:
 
     x += 60
 
-    draw.text((x, 0), f"{str(round(hour.temp_f)) + '°':>4}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
+    draw.text((x, 0),
+              f"{str(round(hour.temp_f)) + '°':>4}",
+              font=font.SIZES[font.Size.Small],
+              fill=colors.BLACK)
 
     return image
 

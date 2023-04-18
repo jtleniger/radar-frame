@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from flask import Blueprint, send_file, Response, jsonify
+from flask import Blueprint, send_file, Response
 from datetime import datetime, timezone
 import logging
 

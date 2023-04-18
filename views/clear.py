@@ -7,14 +7,21 @@ from components.info import info
 from constants import paths, frame, colors
 
 
-def render(current: open_meteo.CurrentConditions, hourly: List[open_meteo.ForecastHour], daily: List[open_meteo.ForecastDay], alerts: List[nws_api.Alert]):
+def render(
+        current: open_meteo.CurrentConditions,
+        hourly: List[open_meteo.ForecastHour],
+        daily: List[open_meteo.ForecastDay],
+        alerts: List[nws_api.Alert]):
+    
     image = Image.new("RGB", (frame.WIDTH, frame.HEIGHT), "#FFF")
 
     left_column_width = frame.WIDTH - frame.HEIGHT
 
     draw = ImageDraw.Draw(image)
 
-    draw.line(((left_column_width - 32, 20), (left_column_width - 32, frame.HEIGHT - 60)), colors.BLACK, 1)
+    draw.line(
+        ((left_column_width - 32, 20), (left_column_width - 32, frame.HEIGHT - 60)),
+        colors.BLACK, 1)
 
     current_img = components.current_conditions(current)
     image.paste(current_img, ((left_column_width - current_img.width) // 2 - 16, 16))

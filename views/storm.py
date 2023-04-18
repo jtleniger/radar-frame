@@ -5,7 +5,11 @@ from components.info import info
 from constants import paths, frame
 from sources import open_meteo, nws_api
 
-def render(current: open_meteo.CurrentConditions, hourly: List[open_meteo.ForecastHour], alerts: List[nws_api.Alert]):
+def render(
+        current: open_meteo.CurrentConditions,
+        hourly: List[open_meteo.ForecastHour],
+        alerts: List[nws_api.Alert]):
+    
     image = Image.new("RGB", (frame.WIDTH, frame.HEIGHT), "#FFF")
 
     left_column_width = frame.WIDTH - frame.HEIGHT

@@ -56,6 +56,6 @@ def create():
         generate_png()
     
     if not data_exists:
-        _logger.info(f'{paths.STREETS_DATA} missing, downloading data and generating png')
+        _logger.info(f'{paths.STREETS_DATA} missing, downloading and generating png')
         osm.get()
         generate_png()

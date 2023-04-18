@@ -9,7 +9,16 @@ def create():
     if paths.PALETTE_IMG.exists():
         logger.info(f'{paths.PALETTE_IMG} exists, doing nothing')
 
-    palette_colors = [colors.BLACK, colors.WHITE, colors.RED, colors.ORANGE, colors.YELLOW, colors.GREEN, colors.BLUE]
+    palette_colors = [
+        colors.BLACK,
+        colors.WHITE,
+        colors.RED,
+        colors.ORANGE,
+        colors.YELLOW,
+        colors.GREEN,
+        colors.BLUE
+        ]
+    
     palette = Image.new("P", (len(palette_colors), 1))
 
     draw = ImageDraw.Draw(palette)
