@@ -1,118 +1,71 @@
 import argparse
-import configparser
-from frame import frame
-from palette import palette
+from setup import palette, streets
 from server import server
-import radar.osm
-import radar.map
-import radar.fetch
-import forecast.render
-import forecast.open_meteo
-import pickle
+from modes.mode import Mode
+from config.config import Config
 import os
 import logging
 import logging.handlers
 
+from state.state import State
+from constants import paths
 
-def render(config, dry_run: bool):
-    """runs the full render process"""
-    logging.info('rendering frame image')
-    render_radar(config, dry_run)
-    render_forecast(config, dry_run)
-    combine_renders(config, dry_run)
-    logging.info('done')
+_logger = logging.getLogger(__name__)
 
-
-def render_radar(config, dry_run: bool):
-    """renders an image from the latest radar data. if --dry-run is set, uses ./nexrad-test-data instead."""
-    if not dry_run:
-        latest = radar.fetch.latest_object(config)
-
-        if not latest:
-            logging.error('could not fetch latest radar data')
-            return
-
-        radar.fetch.fetch_radar(config, latest)
-
-    radar.map.render_composite(config, dry_run)
+def render_clear():
+    Mode.Clear.run(State.instance())
 
 
-def download_osm(config, dry_run: bool):
-    """downloads OSM data. if --dry-run is passed, does nothing."""
-    if not dry_run:
-        radar.osm.download_data(config)
+def render_storm():
+    Mode.Storm.run(State.instance())
 
 
-def render_forecast(config, dry_run: bool):
-    """renders an image from the latest forecast data. if --dry-run is set, uses ./forecast-test-data instead."""
-    if not dry_run:
-        current_conditions, forecast_data = forecast.open_meteo.fetch(config)
+def setup():
+    create_data_dir()
+    palette.create()
+    streets.create()
+
+
+def create_data_dir():
+    if not paths.DATA_DIR.is_dir():
+        _logger.info(f'{paths.DATA_DIR} missing, creating it')
+        os.mkdir(paths.DATA_DIR)
     else:
-        with open(config['files']['forecast_data_test'], 'rb') as infile:
-            data = pickle.load(infile)
-
-            current_conditions = data['current']
-            forecast_data = data['forecast']
-
-    forecast.render.render_image(
-        config,
-        current_conditions,
-        forecast_data
-    )
+        _logger.info(f'{paths.DATA_DIR} exists')
 
 
-def combine_renders(config, _: bool):
-    """creates a combined imaged from the outputs of render-radar and render-forecast"""
-    frame.create(config)
-
-
-def create_palette(config, _: bool):
-    """creates the radar output color palette"""
-    palette.create(config)
-
-
-def create_data_dir(config):
-    data_dir = config['files']['dir']
-
-    if not os.path.isdir(data_dir):
-        os.mkdir(data_dir)
-
-
-def run_server(config, _: bool):
-    s = server.create(config)
+def run_server():
+    setup()
+    s = server.create()
     s.run()
 
 
-def get_config():
-    config = configparser.ConfigParser()
-    config.read('./config/config.ini')
-    return config
-
-
-def setup_logs(config):
-    handler = logging.handlers.RotatingFileHandler(config['logging']['file'], maxBytes=100_000, backupCount=4)
-    handler.setFormatter(logging.Formatter('{asctime} {levelname} {name} {filename}:{lineno} {message}', style='{'))
+def setup_logs():
+    config = Config.instance()
+    handler = logging.handlers.RotatingFileHandler('radar-frame.log',
+                                                   maxBytes=100_000,
+                                                   backupCount=4)
+    
+    handler.setFormatter(
+        logging.Formatter('{asctime} {levelname} {name} {filename}:{lineno} {message}',
+        style='{'))
 
     logging.basicConfig(
         handlers=[handler],
-        encoding='utf-8',
         level=logging.getLevelName(config['logging']['level']))
 
 
 def create_server():
     """Helper to create a server to be used by Gunicorn."""
-    config = get_config()
-    setup_logs(config)
-    return server.create(config)
+    setup_logs()
+    setup()
+    return server.create()
 
 
 COMMANDS = {
-    'render': render,
-    'render-radar': render_radar,
-    'render-forecast': render_forecast,
-    'combine-renders': combine_renders,
-    'download-osm': download_osm,
-    'create-palette': create_palette,
+    'setup': setup,
+    'render-clear': render_clear,
+    'render-storm': render_storm,
     'run-server': run_server,
 }
 
@@ -127,15 +80,13 @@ def main():
     )
 
     parser.add_argument('command', help=f'one of {", ".join(COMMANDS.keys())}')
-    parser.add_argument('-d', '--dry-run', action='store_true', help="don't download data, just use test data")
 
     args = parser.parse_args()
 
-    config = get_config()
-    setup_logs(config)
+    setup_logs()
 
     if args.command in COMMANDS:
-        COMMANDS[args.command](config, args.dry_run)
+        COMMANDS[args.command]()
 
     else:
         parser.print_usage()

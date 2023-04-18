@@ -1,6 +1,6 @@
 venv
-cache
 
 # files
 data/
 *.log
+Dockerfile

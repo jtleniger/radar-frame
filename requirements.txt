@@ -1,7 +1,8 @@
 boto3
-matplotlib
-cartopy
-osmnx
-arm_pyart
+botocore
+cairosvg
 Flask
 gunicorn
+Pillow
+pytz
+requests

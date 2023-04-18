@@ -22,6 +22,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Weather Icons License Information
+## Weather Icons License
 
 ["Weather Icons"](https://github.com/erikflowers/weather-icons) are used in this project. Created  by Lukas Bischoff and Erik Flowers. Licensed under [SIL OFL 1.1](http://scripts.sil.org/OFL).
+
+## Font License
+["Spleen"](https://github.com/fcambus/spleen) font is used in this project. Created by Frederic Cambus. Licensed under BSD 2-Clause.

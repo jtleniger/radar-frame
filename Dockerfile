@@ -1,32 +1,43 @@
-# Use the official Python image as the base image
-FROM python:3.9
+FROM ubuntu:22.04
 
-# Set the working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    libproj-dev \
-    libgeos-dev \
-    libspatialindex-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update
+RUN apt-get install --no-install-recommends -y \
+    python3 \
+    python3-pip \
+    git \
+    gdal-bin \
+    libgdal-dev \
+    python3-gdal \
+    proj-bin \
+    proj-data \
+    libproj-dev \ 
+    libcairo2 \
+    gcc \
+    pkg-config
+RUN apt-get clean && apt-get autoremove
 
-# Copy the requirements file into the container
+
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install --upgrade pip
+RUN pip3 install --prefer-binary -r requirements.txt
 
-RUN pip uninstall --yes shapely
-RUN pip install --no-binary :all: shapely
+COPY --from=golang:1.20.3 /usr/local/go /usr/local/go
+ENV PATH=$PATH:/usr/local/go/bin
 
-COPY download-osm.py .
-RUN python download-osm.py
+RUN git clone https://github.com/jtleniger/go-nexrad.git
 
-# Copy the source code into the container
+WORKDIR /app/go-nexrad
+
+RUN git checkout csv
+RUN go build -o ../bin/nexrad-csv-amd64 cmd/nexrad-csv/*
+
+WORKDIR /app
+
 COPY . .
 
-# Run the command line program
-# CMD ["python", "make_map.py"]
-ENTRYPOINT [ "bash" ]
+EXPOSE 8000
+
+CMD gunicorn --timeout 90 --log-level=info -b 0.0.0.0:8000 "main:create_server()"

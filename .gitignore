@@ -6,7 +6,10 @@ __pycache__
 config/config.ini
 
 # files
+bin/
 data/
 *.log
+radar-frame*.tar
+radar-frame*.tar.gz
 
-terminess.ttf
+upload.sh
