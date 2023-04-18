@@ -19,7 +19,7 @@ _ALERT_COLORS = {
         'bg': colors.YELLOW
     },
     AlertLevel.Warning: {
-        'fg': colors.WHITE,
+        'fg': colors.BLACK,
         'bg': colors.ORANGE
     },
     AlertLevel.Emergency: {

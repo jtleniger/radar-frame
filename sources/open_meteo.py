@@ -15,7 +15,6 @@ _logger = logging.getLogger(__name__)
 @dataclass
 class CurrentConditions:
     temp_f: float
-    wind_mph: int
     code: int
     is_day: bool
 
@@ -25,8 +24,6 @@ class ForecastDay:
     day: str
     high_f: float
     low_f: float
-    precip_sum: float
-    wind_mph: float
     code: int
 
 
@@ -39,8 +36,7 @@ class ForecastHour:
 
 _CURRENT_PARAMS = {
     'current_weather': 'true',
-    'temperature_unit': 'fahrenheit',
-    'windspeed_unit': 'mph'
+    'temperature_unit': 'fahrenheit'
 }
 
 _DAILY_PARAMS = {
@@ -48,25 +44,16 @@ _DAILY_PARAMS = {
         'weathercode',
         'temperature_2m_max',
         'temperature_2m_min',
-        'precipitation_sum',
-        'windspeed_10m_max',
-        'sunrise',
-        'sunset'
     ]),
-    'temperature_unit': 'fahrenheit',
-    'windspeed_unit': 'mph',
-    'precipitation_unit': 'inch'
+    'temperature_unit': 'fahrenheit'
 }
 
 _HOURLY_PARAMS = {
     'hourly': ','.join([
         'weathercode',
-        'temperature_2m',
-        'windspeed_10m'
+        'temperature_2m'
     ]),
     'temperature_unit': 'fahrenheit',
-    'windspeed_unit': 'mph',
-    'precipitation_unit': 'inch',
     'forecast_days': 2
 }
 
@@ -94,7 +81,6 @@ def current():
     data = _get(_CURRENT_PARAMS.copy())
     return CurrentConditions(
         temp_f=data['current_weather']['temperature'],
-        wind_mph=data['current_weather']['windspeed'],
         code=data['current_weather']['weathercode'],
         is_day=data['current_weather']['is_day'] == 1)
 
@@ -142,8 +128,6 @@ def daily() -> List[ForecastDay]:
             day=datetime.strptime(data['daily']['time'][i], '%Y-%m-%d').strftime('%a').lower(),
             high_f=data['daily']['temperature_2m_max'][i],
             low_f=data['daily']['temperature_2m_min'][i],
-            precip_sum=data['daily']['precipitation_sum'][i],
-            wind_mph=data['daily']['windspeed_10m_max'][i],
             code=data['daily']['weathercode'][i],
         ))
 

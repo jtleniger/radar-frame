@@ -17,26 +17,29 @@ api = Blueprint('api', __name__)
 def frame():
     state = State.instance()
 
-    radar_status = nws_api.radar_status()
-
-    _logger.info(radar_status)
-
-    if not radar_status.up:
-        # TODO
-        _logger.error('radar down')
-
-    if radar_status.vcp == -1:
-        # TODO
-        _logger.error('some issue with nws api')
-
-    if radar_status.clear_air_mode():
-        state.mode = Mode.Clear
-    else:
-        state.mode = Mode.Storm
-
     now = datetime.now(tz=timezone.utc)
 
+    _logger.info(f'last updated: {state.last_updated}')
+    _logger.info(f'now: {now}')
+
     if now > (state.last_updated + state.mode.interval()):
+        radar_status = nws_api.radar_status()
+
+        _logger.info(radar_status)
+
+        if not radar_status.up:
+            # TODO
+            _logger.error('radar down')
+
+        if radar_status.vcp == -1:
+            # TODO
+            _logger.error('some issue with nws api')
+
+        if radar_status.clear_air_mode():
+            state.mode = Mode.Clear
+        else:
+            state.mode = Mode.Storm
+        
         state.run_mode()
 
         state.last_updated = now

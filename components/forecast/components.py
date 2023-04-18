@@ -9,7 +9,7 @@ from sources import open_meteo
 
 
 def current_conditions(current: open_meteo.CurrentConditions) -> Image.Image:
-    image = Image.new("RGBA", (192, 192), colors.WHITE)
+    image = Image.new("RGBA", (256, 192), colors.WHITE)
 
     draw = ImageDraw.Draw(image)
     # Disables antialiasing
@@ -55,18 +55,6 @@ def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
               f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
 
     x += 192
-
-    # Wind
-    icon = icons.get_icon_as_png('wi-strong-wind', 32)
-    image.paste(icon, (x, 0), icon)
-
-    draw.text((x + 32, 0), f"{str(round(day.wind_mph)):>3}" + "mph", font=font.SIZES[font.Size.XSmall], fill=colors.BLACK)
-
-    # Rain
-    icon = icons.get_icon_as_png('wi-raindrop', 32)
-    image.paste(icon, (x, 24), icon)
-
-    draw.text((x + 48, 24), f"{str(round(day.precip_sum, 1)):>4}" + '"', font=font.SIZES[font.Size.XSmall], fill=colors.BLACK)
 
     return image
 
