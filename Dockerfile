@@ -39,4 +39,5 @@ WORKDIR /app
 COPY . .
 
 EXPOSE 8000
+
 CMD gunicorn --timeout 90 --log-level=info -b 0.0.0.0:8000 "main:create_server()"

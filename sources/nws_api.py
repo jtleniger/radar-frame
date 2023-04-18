@@ -5,6 +5,7 @@ import re
 from dataclasses import dataclass
 import logging
 from enum import Enum, auto
+from datetime import datetime
 
 from config.config import Config
 
@@ -33,6 +34,9 @@ class AlertLevel(Enum):
 class Alert:
     event: str
     level: AlertLevel
+    status: str
+    effective: datetime
+    expires: datetime
 
     @staticmethod
     def from_dict(alert):
@@ -52,7 +56,10 @@ class Alert:
 
         return Alert(
             event=alert['event'].lower(),
-            level=level
+            level=level,
+            status=alert['status'].lower(),
+            effective=datetime.fromisoformat(alert['effective']),
+            expires=datetime.fromisoformat(alert['expires'])       
         )
 
 
@@ -74,7 +81,7 @@ def alerts() -> List[Alert]:
 
     data = response.json()
 
-    return [Alert.from_dict(alert['properties']) for alert in data['features'] if alert['properties']['status'].lower() == 'actual']
+    return [Alert.from_dict(alert['properties']) for alert in data['features']]
 
 
 def radar_status() -> RadarStatus:

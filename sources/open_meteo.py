@@ -102,7 +102,7 @@ def hourly():
         if len(forecast) > 4:
             break
 
-        time = datetime.fromisoformat(data['hourly']['time'][i]) # '%Y-%m-%dT%H:%M'
+        time = datetime.fromisoformat(data['hourly']['time'][i])
         time = local_tz.localize(time)
 
         if time < now_local_hour:

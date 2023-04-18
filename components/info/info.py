@@ -28,6 +28,9 @@ _ALERT_COLORS = {
     }
 }
 
+def alert_active(alert: Alert, now_local: datetime) -> bool:
+    return alert.status == 'actual' and now_local > alert.effective and now_local < alert.expires
+
 
 def render(alerts: List[Alert]) -> Image.Image:
     config = Config.instance()
@@ -43,6 +46,7 @@ def render(alerts: List[Alert]) -> Image.Image:
     if not alerts:
         return image
     
+    alerts = list(filter(lambda a: alert_active(a, now_local), alerts))
     alerts.sort(key=lambda a: a.level.value)
 
     most_severe = alerts[0]
