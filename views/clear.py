@@ -14,7 +14,7 @@ def render(current: open_meteo.CurrentConditions, hourly: List[open_meteo.Foreca
 
     draw = ImageDraw.Draw(image)
 
-    draw.line(((left_column_width - 32, 32), (left_column_width - 32, frame.HEIGHT - 60)), colors.BLACK, 1)
+    draw.line(((left_column_width - 32, 20), (left_column_width - 32, frame.HEIGHT - 60)), colors.BLACK, 1)
 
     current_img = components.current_conditions(current)
     image.paste(current_img, ((left_column_width - current_img.width) // 2 - 16, 8))

@@ -9,9 +9,7 @@ config/config.ini
 bin/
 data/
 *.log
-radar-frame-arm.tar
-radar-frame-amd64.tar
-radar-frame-arm.tar.zip
-radar-frame-amd64.tar.zip
+radar-frame*.tar
+radar-frame*.tar.gz
 
-terminess.ttf
+upload.sh

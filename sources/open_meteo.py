@@ -45,7 +45,8 @@ _DAILY_PARAMS = {
         'temperature_2m_max',
         'temperature_2m_min',
     ]),
-    'temperature_unit': 'fahrenheit'
+    'temperature_unit': 'fahrenheit',
+    'forecast_days': 7
 }
 
 _HOURLY_PARAMS = {

@@ -42,19 +42,17 @@ def forecast_day(day: open_meteo.ForecastDay) -> Image.Image:
     # Day
     draw.text((x, 8), f"{day.day}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
 
-    x += 72
+    x += 128
 
     # Icon
     icon = codes.code_to_img(day.code, False, 48)
-    image.paste(icon, (x, 8), icon)
+    image.paste(icon, (x, 0), icon)
 
-    x += 64
+    x += 128
 
     # High & Low
     draw.text((x, 8),
               f"{str(round(day.high_f)) + '°':>4} / {str(round(day.low_f)) + '°':>4}", font=font.SIZES[font.Size.Small], fill=colors.BLACK)
-
-    x += 192
 
     return image
 
