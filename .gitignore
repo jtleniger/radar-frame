@@ -11,5 +11,6 @@ data/
 *.log
 radar-frame*.tar
 radar-frame*.tar.gz
+radar-frame.pex
 
 upload.sh
