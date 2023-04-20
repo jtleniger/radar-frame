@@ -11,8 +11,7 @@ PALETTE_IMG = DATA_DIR / 'palette.png'
 
 RADAR_IMG = DATA_DIR / 'nexrad-latest.png'
 RADAR_RAW = DATA_DIR / 'nexrad-latest.ar2'
-RADAR_CSV = DATA_DIR / 'nexrad-latest.csv'
-RADAR_SHP = DATA_DIR / 'nexrad-latest.shp'
+RADAR_JSON = DATA_DIR / 'nexrad-latest.json'
 RADAR_TIF = DATA_DIR / 'nexrad-latest.tif'
 
 OUTPUT_IMG = DATA_DIR / 'frame.png'
@@ -20,4 +19,4 @@ OUTPUT_IMG = DATA_DIR / 'frame.png'
 
 BIN_DIR = Path(os.getcwd()) / 'bin'
 
-NEXRAD_CSV_BIN = BIN_DIR / 'nexrad-csv-amd64'
+NEXRAD_JSON_BIN = BIN_DIR / 'nexrad-json'

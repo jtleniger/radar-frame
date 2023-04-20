@@ -26,6 +26,8 @@ def run(state: "State"):
     else:
         _logger.info('using old radar data')
 
+    render_radar()
+
     current = open_meteo.current()
     hourly = open_meteo.hourly()
     alerts = nws_api.alerts()

@@ -1,6 +1,7 @@
 venv
 
 # files
+bin/
 data/
 *.log
 Dockerfile
