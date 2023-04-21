@@ -27,6 +27,6 @@ def render(
     image.paste(info_img, (0, frame.HEIGHT - info_img.height))
 
     palette = Image.open(paths.PALETTE_IMG)
-    image = image.quantize(7, palette=palette, dither=Image.Dither.NONE)
+    image = image.quantize(7, palette=palette)
 
     image.save(paths.OUTPUT_IMG)
