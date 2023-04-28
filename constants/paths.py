@@ -11,7 +11,8 @@ PALETTE_IMG = DATA_DIR / 'palette.png'
 
 RADAR_IMG = DATA_DIR / 'nexrad-latest.png'
 RADAR_RAW = DATA_DIR / 'nexrad-latest.ar2'
-RADAR_JSON = DATA_DIR / 'nexrad-latest.json'
+RADAR_JSON_BASENAME = DATA_DIR / 'nexrad-latest'
+RADAR_ELEVATION_TIF_BASENAME = DATA_DIR / 'nexrad-latest'
 RADAR_TIF = DATA_DIR / 'nexrad-latest.tif'
 
 OUTPUT_IMG = DATA_DIR / 'frame.png'
@@ -19,4 +20,4 @@ OUTPUT_IMG = DATA_DIR / 'frame.png'
 
 BIN_DIR = Path(os.getcwd()) / 'bin'
 
-NEXRAD_JSON_BIN = BIN_DIR / 'nexrad-json'
+NEXRAD_JSON_BIN = BIN_DIR / 'go-nexrad-geojson'
