@@ -20,7 +20,7 @@ def current_conditions(current: forecast.CurrentConditions) -> Image.Image:
     # Disables antialiasing
     draw.fontmode = '1'  # type: ignore
 
-    debug_edges(draw, image, '#F00')
+    # debug_edges(draw, image, '#F00')
 
     y = 40
     draw.text((image.width / 2 + 6, y), f"{str(round(current.temp_f))}",
@@ -83,7 +83,7 @@ def daily_forecast(days: List[forecast.ForecastDay]) -> Image.Image:
         image.paste(day, (0, y))
         y += day.height
 
-    debug_edges(draw, image, '#00F')
+    # debug_edges(draw, image, '#00F')
 
     return image
 
@@ -131,6 +131,6 @@ def hourly_forecast(all_hours: List[forecast.ForecastHour]) -> Image.Image:
         image.paste(hour, (0, y))
         y += hour.height
 
-    debug_edges(draw, image, '#0F0')
+    # debug_edges(draw, image, '#0F0')
 
     return image
