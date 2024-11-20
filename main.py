@@ -7,20 +7,29 @@ import os
 import logging
 import logging.handlers
 
+from sources.forecast import ForecastProvider
+from sources.mock_forecast import MockForecast
+from sources.online_forecast import OnlineForecast
 from state.state import State
 from constants import paths
 
 _logger = logging.getLogger(__name__)
 
-def render_clear():
-    Mode.Clear.run(State.instance())
+def provider(mock: bool) -> ForecastProvider:
+    if not mock:
+        return OnlineForecast()
+    
+    return MockForecast()
+
+def render_clear(mock: bool):
+    Mode.Clear.run(State.instance(), provider(mock))
 
 
-def render_storm():
-    Mode.Storm.run(State.instance())
+def render_storm(mock: bool):
+    Mode.Storm.run(State.instance(), provider(mock))
 
 
-def setup():
+def setup(_):
     create_data_dir()
     palette.create()
     streets.create()
@@ -34,8 +43,8 @@ def create_data_dir():
         _logger.info(f'{paths.DATA_DIR} exists')
 
 
-def run_server():
-    setup()
+def run_server(_):
+    setup(None)
     s = server.create()
     s.run()
 
@@ -58,7 +67,7 @@ def setup_logs():
 def create_server():
     """Helper to create a server to be used by Gunicorn."""
     setup_logs()
-    setup()
+    setup(None)
     return server.create()
 
 
@@ -80,13 +89,14 @@ def main():
     )
 
     parser.add_argument('command', help=f'one of {", ".join(COMMANDS.keys())}')
+    parser.add_argument('--mock', action='store_true', help='use mock forecast data')
 
     args = parser.parse_args()
 
     setup_logs()
 
     if args.command in COMMANDS:
-        COMMANDS[args.command]()
+        COMMANDS[args.command](args.mock)
 
     else:
         parser.print_usage()

@@ -1,4 +1,4 @@
-from constants import info
+from constants import frame
 
-WIDTH = 480
-HEIGHT = 480 - info.HEIGHT
+WIDTH = frame.WIDTH
+HEIGHT = frame.HEIGHT_LESS_INFO

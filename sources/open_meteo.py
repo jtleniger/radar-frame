@@ -2,36 +2,13 @@ import requests
 from urllib.parse import urlencode
 from pytz import timezone
 from datetime import datetime, timezone as pytimezone
-from dataclasses import dataclass
 from typing import List
 import logging
+from sources import forecast
 
 from config.config import Config
 
 _logger = logging.getLogger(__name__)
-
-
-@dataclass
-class CurrentConditions:
-    temp_f: float
-    code: int
-    is_day: bool
-
-
-@dataclass
-class ForecastDay:
-    day: str
-    high_f: float
-    low_f: float
-    code: int
-
-
-@dataclass
-class ForecastHour:
-    hour: str
-    temp_f: float
-    code: int
-
 
 _CURRENT_PARAMS = {
     'current_weather': 'true',
@@ -79,52 +56,50 @@ def _get(params):
 
 def current():
     data = _get(_CURRENT_PARAMS.copy())
-    return CurrentConditions(
+    return forecast.CurrentConditions(
         temp_f=data['current_weather']['temperature'],
         code=data['current_weather']['weathercode'],
         is_day=data['current_weather']['is_day'] == 1)
 
 
-def hourly():
+def hourly() -> List[forecast.ForecastHour]:
     config = Config.instance()
 
     now_utc = datetime.now(tz=pytimezone.utc)
     local_tz = timezone(config['forecast']['timezone'])
     now_local = now_utc.astimezone(local_tz)
+    ## todo: find nearest hour
     now_local_hour = now_local.replace(minute=0, second=0, microsecond=0)
 
     data = _get(_HOURLY_PARAMS.copy())
 
-    forecast = []
+    hours = []
 
     for i in range(len(data['hourly']['time'])):
-        if len(forecast) > 4:
-            break
-
         time = datetime.fromisoformat(data['hourly']['time'][i])
         time = local_tz.localize(time)
 
         if time < now_local_hour:
             continue
 
-        forecast.append(ForecastHour(
+        hours.append(forecast.ForecastHour(
             hour=time.strftime('%-I%p').lower(),
             temp_f=data['hourly']['temperature_2m'][i],
             code=data['hourly']['weathercode'][i],
         ))
 
-    forecast[0].hour = 'now'
+    # hours[0].hour = 'now'
 
-    return forecast
+    return hours
 
 
-def daily() -> List[ForecastDay]:
+def daily() -> List[forecast.ForecastDay]:
     data = _get(_DAILY_PARAMS.copy())
 
-    forecast = []
+    days = []
 
     for i in range(len(data['daily']['time'])):
-        forecast.append(ForecastDay(
+        days.append(forecast.ForecastDay(
             day=datetime
                 .strptime(data['daily']['time'][i], '%Y-%m-%d')
                 .strftime('%a').lower(),
@@ -133,4 +108,4 @@ def daily() -> List[ForecastDay]:
             code=data['daily']['weathercode'][i],
         ))
 
-    return forecast
+    return days

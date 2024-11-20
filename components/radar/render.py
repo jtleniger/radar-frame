@@ -59,7 +59,7 @@ def render():
     for cmd in cmds:
         _run_and_check(cmd)
 
-    image = Image.new('RGBA', (radar.WIDTH, radar.HEIGHT), colors.BLACK)
+    image = Image.new('RGBA', (radar.WIDTH, radar.HEIGHT), colors.BLACK) # type: ignore
     radar_img = Image.open(paths.RADAR_IMG)
     streets = Image.open(paths.STREETS_IMG)
     image.paste(radar_img, (0, 0), radar_img)

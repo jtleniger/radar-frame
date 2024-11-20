@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import logging
 
 from modes.mode import Mode
+from sources.online_forecast import OnlineForecast
 from state.state import State
 from sources import nws_api
 from constants import paths
@@ -51,7 +52,7 @@ def frame():
         state.last_updated = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
     if now > (state.last_updated + state.mode.interval()):
-        state.run_mode()
+        state.run_mode(OnlineForecast())
 
         state.last_updated = now
 

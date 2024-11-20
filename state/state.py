@@ -2,6 +2,10 @@ from datetime import datetime, timezone
 
 from modes.mode import Mode
 
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from sources.forecast import ForecastProvider
+
 class State:
     _state = None
 
@@ -10,8 +14,8 @@ class State:
         self.radar_last_updated = datetime(1970, 1, 1, tzinfo=timezone.utc)
         self.mode = Mode.Clear
 
-    def run_mode(self):
-        self.mode.run(self)
+    def run_mode(self, forecast: "ForecastProvider"):
+        self.mode.run(self, forecast)
 
     @staticmethod
     def instance():

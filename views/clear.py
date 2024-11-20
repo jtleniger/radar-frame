@@ -1,39 +1,41 @@
 from PIL import Image, ImageDraw
 from typing import List
 
-from sources import open_meteo, nws_api
+from sources import forecast
 from components.forecast import components
 from components.info import info
 from constants import paths, frame, colors
 
 
 def render(
-        current: open_meteo.CurrentConditions,
-        hourly: List[open_meteo.ForecastHour],
-        daily: List[open_meteo.ForecastDay],
-        alerts: List[nws_api.Alert]):
+        current: forecast.CurrentConditions,
+        hourly: List[forecast.ForecastHour],
+        daily: List[forecast.ForecastDay],
+        alerts: List[forecast.Alert]):
     
-    image = Image.new("RGB", (frame.WIDTH, frame.HEIGHT), "#FFF")
-
-    left_column_width = frame.WIDTH - frame.HEIGHT
+    image = Image.new("RGB", (frame.WIDTH, frame.HEIGHT), "#FFF") # type: ignore
 
     draw = ImageDraw.Draw(image)
 
-    draw.line(
-        ((left_column_width - 32, 20), (left_column_width - 32, frame.HEIGHT - 60)),
-        colors.BLACK, 1)
-
     current_img = components.current_conditions(current)
-    image.paste(current_img, ((left_column_width - current_img.width) // 2 - 16, 16))
+    image.paste(current_img, (0, 0))
 
     hourly_img = components.hourly_forecast(hourly)
-    image.paste(hourly_img, (42, current_img.height))
+    image.paste(hourly_img, (frame.WIDTH_1_3, 0))
  
     daily_img = components.daily_forecast(daily)
-    image.paste(daily_img, (left_column_width, 16))
+    image.paste(daily_img, (2 * frame.WIDTH_1_3, 0))
 
     info_img = info.render(alerts)
-    image.paste(info_img, (0, frame.HEIGHT - info_img.height))
+    image.paste(info_img, (0, frame.HEIGHT_LESS_INFO))
+
+    draw.line(
+        ((frame.WIDTH_1_3, 20), (frame.WIDTH_1_3, frame.HEIGHT_LESS_INFO - 20)),
+        colors.BLACK, 2)
+    
+    draw.line(
+        ((2 * frame.WIDTH_1_3, 20), (2 * frame.WIDTH_1_3, frame.HEIGHT_LESS_INFO - 20)),
+        colors.BLACK, 2)
 
     palette = Image.open(paths.PALETTE_IMG)
     image = image.quantize(7, palette=palette, dither=Image.Dither.NONE)

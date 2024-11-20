@@ -4,37 +4,33 @@ def code_to_string(code):
     if code == 0 or code == 1:
         return 'clear'
     if code == 2:
-        return 'partly cloudy'
+        return 'cloudy'
     if code == 3:
         return 'overcast'
     if code > 40 and code < 50:
         return 'fog'
-    if code == 51:
-        return 'light drizzle'
-    if code == 53:
-        return 'moderate drizzle'
-    if code == 55:
-        return 'heavy drizzle'
+    if code == 51 or code == 53 or code == 55:
+        return 'drizzle'
     if code == 56 or code == 57:
-        return 'freezing drizzle'
+        return 'sleet'
     if code == 61 or code == 80:
-        return 'light rain'
+        return 'rain'
     if code == 63 or code == 81:
         return 'rain'
     if code == 65 or code == 82:
-        return 'heavy rain'
+        return 'rain'
     if code == 66 or code == 67:
-        return 'freezing rain'
+        return 'rain'
     if code == 71 or code == 85:
-        return 'light snow'
+        return 'snow'
     if code == 73:
         return 'snow'
     if code == 75 or code == 86:
-        return 'heavy snow'
+        return 'snow'
     if code == 77:
         return 'graupel'
     if code > 94 and code < 100:
-        return 'thunderstorm'
+        return 'tstorm'
     
     return str(code)
 

@@ -1,6 +1,6 @@
 import logging
 
-from sources import nexrad_level2, open_meteo, nws_api
+from sources import nexrad_level2, forecast
 from components.radar.render import render as render_radar
 
 from typing import TYPE_CHECKING
@@ -12,7 +12,7 @@ from constants import paths
 
 _logger = logging.getLogger(__name__)
 
-def run(state: "State"):
+def run(state: "State", forecast: forecast.ForecastProvider):
     latest = nexrad_level2.latest_object()
 
     if latest and latest.last_modified > state.radar_last_updated:
@@ -28,8 +28,6 @@ def run(state: "State"):
 
     render_radar()
 
-    current = open_meteo.current()
-    hourly = open_meteo.hourly()
-    alerts = nws_api.alerts()
+    alerts = forecast.alerts()
 
-    storm.render(current, hourly, alerts)
+    storm.render(alerts)

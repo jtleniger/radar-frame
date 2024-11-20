@@ -1,2 +1,7 @@
+from constants import info
+
 WIDTH = 800
 HEIGHT = 480
+WIDTH_1_3 = WIDTH // 3
+HEIGHT_LESS_INFO = HEIGHT - info.HEIGHT
+HEIGHT_LESS_INFO_1_3 = HEIGHT_LESS_INFO // 3

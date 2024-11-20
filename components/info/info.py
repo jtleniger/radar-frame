@@ -6,36 +6,36 @@ from datetime import datetime, timezone as pytimezone
 from components.font import font
 from config.config import Config
 from constants import frame, colors, info
-from sources.nws_api import Alert, AlertLevel
+from sources import forecast
 
 _ALERT_COLORS = {
-    AlertLevel.Info: {
+    forecast.AlertLevel.Info: {
         'fg': colors.WHITE,
         'bg': colors.BLACK
     },
-    AlertLevel.Watch: {
+    forecast.AlertLevel.Watch: {
         'fg': colors.BLACK,
         'bg': colors.YELLOW
     },
-    AlertLevel.Warning: {
+    forecast.AlertLevel.Warning: {
         'fg': colors.BLACK,
         'bg': colors.ORANGE
     },
-    AlertLevel.Emergency: {
+    forecast.AlertLevel.Emergency: {
         'fg': colors.WHITE,
         'bg': colors.RED
     }
 }
 
-def alert_active(alert: Alert, now_local: datetime) -> bool:
+def alert_active(alert: forecast.Alert, now_local: datetime) -> bool:
     return (alert.status == 'actual'and
         now_local > alert.effective and
         now_local < alert.expires)
 
 
-def render(alerts: List[Alert]) -> Image.Image:
+def render(alerts: List[forecast.Alert]) -> Image.Image:
     config = Config.instance()
-    image = Image.new("RGBA", (frame.WIDTH, info.HEIGHT), colors.BLACK)
+    image = Image.new("RGBA", (frame.WIDTH, info.HEIGHT), colors.BLACK) # type: ignore
     draw = ImageDraw.Draw(image)
 
     now_utc = datetime.now(tz=pytimezone.utc)

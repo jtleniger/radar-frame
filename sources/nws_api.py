@@ -2,10 +2,8 @@ from typing import List
 from urllib.parse import urlencode
 import requests
 import re
-from dataclasses import dataclass
 import logging
-from enum import Enum, auto
-from datetime import datetime
+from sources import forecast
 
 from config.config import Config
 
@@ -13,64 +11,7 @@ _logger = logging.getLogger(__name__)
 
 _BASE_URL = 'https://api.weather.gov/'
 
-
-@dataclass
-class RadarStatus:
-    up: bool
-    vcp: int
-
-    def clear_air_mode(self):
-        return self.vcp in [31, 32, 35]
-
-
-class AlertLevel(Enum):
-    Info = auto()
-    Watch = auto()
-    Warning = auto()
-    Emergency = auto()
-
-
-@dataclass
-class Alert:
-    event: str
-    level: AlertLevel
-    status: str
-    effective: datetime
-    expires: datetime
-
-    @staticmethod
-    def from_dict(alert):
-        urgency = alert['urgency'].lower()
-        severity = alert['severity'].lower()
-        certainty = alert['certainty'].lower()
-
-        if (urgency == 'future' and
-            severity in ['extreme', 'severe', 'moderate']
-            and certainty == 'possible'):
-
-            level = AlertLevel.Watch
-
-        elif (urgency in ['immediate', 'expected'] and
-              certainty in ['likely', 'observed'] and
-              severity in ['extreme', 'severe']):
-            
-            if severity == 'extreme':
-                level = AlertLevel.Emergency
-            else:
-                level = AlertLevel.Warning
-        else:
-            level = AlertLevel.Info
-
-        return Alert(
-            event=alert['event'].lower(),
-            level=level,
-            status=alert['status'].lower(),
-            effective=datetime.fromisoformat(alert['effective']),
-            expires=datetime.fromisoformat(alert['expires'])       
-        )
-
-
-def alerts() -> List[Alert]:
+def alerts() -> List[forecast.Alert]:
     config = Config.instance()
 
     params = {
@@ -88,10 +29,10 @@ def alerts() -> List[Alert]:
 
     data = response.json()
 
-    return [Alert.from_dict(alert['properties']) for alert in data['features']]
+    return [forecast.Alert.from_dict(alert['properties']) for alert in data['features']]
 
 
-def radar_status() -> RadarStatus:
+def radar_status() -> forecast.RadarStatus:
     config = Config.instance()
 
     url = f"{_BASE_URL}radar/stations/{config['radar']['nexrad_id']}"
@@ -118,4 +59,4 @@ def radar_status() -> RadarStatus:
 
     up = status == 'Operate'
 
-    return RadarStatus(up, vcp)
+    return forecast.RadarStatus(up, vcp)
