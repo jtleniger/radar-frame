@@ -1,4 +1,4 @@
-import os
+import subprocess
 from PIL import Image
 import logging
 from config.config import Config
@@ -10,12 +10,14 @@ _logger = logging.getLogger(__name__)
 
 def _run_and_check(cmd):
     _logger.info('command:')
-    _logger.info(cmd)
-
-    exit_code = os.system(cmd)
-
-    if exit_code != 0:
-        raise Exception(f'exited {exit_code}')
+    _logger.info(' '.join(cmd))
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    except subprocess.CalledProcessError as e:
+        _logger.error(f'Command failed with exit code {e.returncode}')
+        _logger.error(f'STDOUT: {e.stdout}')
+        _logger.error(f'STDERR: {e.stderr}')
+        raise
 
 
 def render():
@@ -29,31 +31,65 @@ def render():
     cmds = []
     
     # Convert raw data to GeoJSONs
-    cmd = f'{paths.NEXRAD_JSON_BIN} --minimum 10 -e 1-3 -p REF -o '
-    cmd += f'{paths.RADAR_JSON_BASENAME} {paths.RADAR_RAW}'
+    cmd = [
+        paths.NEXRAD_JSON_BIN.as_posix(), 
+        '--minimum', '10', 
+        '-e', '1-3', 
+        '-p', 'REF', 
+        '-o', paths.RADAR_JSON_BASENAME.as_posix(), 
+        paths.RADAR_RAW.as_posix()
+    ]
     cmds.append(cmd)
 
     # Rasterize each elevation
     for i in range(1, 4):
-        cmd = 'gdal_rasterize -q -a value -ot byte -te '
-        cmd += f'{min_lon} {min_lat} {max_lon} {max_lat} '
-        cmd += f'-ts {radar.WIDTH} {radar.HEIGHT} '
-        cmd += f'{paths.RADAR_JSON_BASENAME}-REF-{i}.json '
-        cmd += f'{paths.RADAR_ELEVATION_TIF_BASENAME}-REF-{i}.tif'
+        cmd = [
+            'gdal_rasterize', 
+            '-q', 
+            '-a', 'value', 
+            '-ot', 'byte', 
+            '-te', str(min_lon), str(min_lat), str(max_lon), str(max_lat),
+            '-ts', str(radar.WIDTH), str(radar.HEIGHT),
+            f'{paths.RADAR_JSON_BASENAME.as_posix()}-REF-{i}.json',
+            f'{paths.RADAR_ELEVATION_TIF_BASENAME.as_posix()}-REF-{i}.tif'
+        ]
         cmds.append(cmd)
 
     # Composite
-    cmd = f'gdal_calc.py -A {paths.RADAR_ELEVATION_TIF_BASENAME}-REF-*.tif --overwrite '
-    cmd += f'--outfile={paths.RADAR_TIF} --quiet --calc="numpy.max(A,axis=0)"'
+    cmd = [
+        'gdal_calc.py', 
+        f'-A'
+    ] + [
+        f'{paths.RADAR_ELEVATION_TIF_BASENAME.as_posix()}-REF-{i}.tif' for i in range(1, 4)
+    ] + [ 
+        '--overwrite',
+        f'--outfile={paths.RADAR_TIF.as_posix()}', 
+        '--quiet', 
+        '--calc=numpy.max(A,axis=0)'
+    ]
     cmds.append(cmd)
 
     # Colorize
-    cmd = f'gdaldem color-relief -q {paths.RADAR_TIF} '
-    cmd += f'gdal-colors.txt -alpha -nearest_color_entry {paths.RADAR_TIF}'
+    cmd = [
+        'gdaldem', 
+        'color-relief', 
+        '-q', 
+        paths.RADAR_TIF.as_posix(),
+        'gdal-colors.txt', 
+        '-alpha', 
+        '-nearest_color_entry', 
+        paths.RADAR_TIF.as_posix()
+    ]
     cmds.append(cmd)
 
     # Convert to PNG
-    cmd = f'gdal_translate -q -of PNG {paths.RADAR_TIF} {paths.RADAR_IMG}'
+    cmd = [
+        'gdal_translate', 
+        '-q', 
+        '-of', 'PNG', 
+        paths.RADAR_TIF.as_posix(), 
+        paths.RADAR_IMG.as_posix()
+    ]
     cmds.append(cmd)
 
     for cmd in cmds:
