@@ -2,6 +2,7 @@ import subprocess
 from PIL import Image
 import logging
 from config.config import Config
+from string import ascii_uppercase
 
 from constants import paths, radar, colors
 
@@ -57,15 +58,18 @@ def render():
 
     # Composite
     cmd = [
-        'gdal_calc.py', 
-        f'-A'
-    ] + [
-        f'{paths.RADAR_ELEVATION_TIF_BASENAME.as_posix()}-REF-{i}.tif' for i in range(1, 4)
-    ] + [ 
+        'gdal_calc.py'
+    ]
+    
+    for i in range(0, 3):
+        cmd.append(f'-{ascii_uppercase[i]}')
+        cmd.append(f'{paths.RADAR_ELEVATION_TIF_BASENAME.as_posix()}-REF-{i + 1}.tif')
+    
+    cmd += [ 
         '--overwrite',
         f'--outfile={paths.RADAR_TIF.as_posix()}', 
         '--quiet', 
-        '--calc=numpy.max(A,axis=0)'
+        f'--calc=numpy.max(({",".join(ascii_uppercase[0:3])}),axis=0)'
     ]
     cmds.append(cmd)
 
