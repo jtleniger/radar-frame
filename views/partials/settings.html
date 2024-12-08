@@ -1,0 +1,21 @@
+<form hx-post="/settings" hx-trigger="change" hx-swap="outerHTML">
+    <div>
+        <span>Mode Selection</span>
+        {% if manual_til %}
+        <span class="til">(until {{ manual_til }})</span>
+        {% endif %}
+    </div>
+    <fieldset>
+        <label for="auto" {% if mode_select == 'Auto' %}class="active"{% endif %}>Auto</label>
+        <input type="radio" autocomplete="off" id="auto" name="mode-select" value="Auto" {% if mode_select == 'Auto' %}checked="checked"{% endif %}>
+        <label for="manual" {% if mode_select == 'Manual' %}class="active"{% endif %}>Manual</label>
+        <input type="radio" autocomplete="off" id="manual" name="mode-select" value="Manual" {% if mode_select == 'Manual' %}checked="checked"{% endif %}>
+    </fieldset>
+    <span>Mode</span>
+    <fieldset {% if mode_select == 'Auto' %}disabled="disabled"{% endif %}>
+        <label for="clear" {% if mode == 'Clear' %}class="active"{% endif %}>Clear</label>
+        <input type="radio" autocomplete="off" id="clear" name="mode" value="Clear" {% if mode == 'Clear' %}checked="checked"{% endif %}>
+        <label for="storm" {% if mode == 'Storm' %}class="active"{% endif %}>Storm</label>
+        <input type="radio" autocomplete="off" id="storm" name="mode" value="Storm" {% if mode == 'Storm' %}checked="checked"{% endif %}>
+    </fieldset>
+</form>

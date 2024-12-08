@@ -1,0 +1,62 @@
+html {
+    font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+    font-weight: 300;
+    color: #F5F5F5;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #212121;
+    margin: 0;
+    padding: 0;
+}
+
+main.content {
+    width: 100%;
+    max-width: 960px;
+    background-color: #424242;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 100vh;
+}
+
+section.title h1 {
+    font-weight: 300;
+    text-align: center;
+}
+
+section.current-frame {
+    display: flex;
+    flex-direction: column;
+}
+
+section.info, section.settings form {
+    display: grid;
+    padding: 1rem;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+section.settings fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 0rem;
+}
+
+section.settings span.til {
+    color: #BDBDBD;
+}
+
+section.settings fieldset:disabled label {
+    color: #BDBDBD;
+}
+
+section.settings fieldset:disabled label.active, section.settings fieldset label.active {
+    color: #4FC3F7;
+}

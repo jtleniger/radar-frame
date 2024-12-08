@@ -1,0 +1,16 @@
+{% extends "layouts/layout.html" %}
+{% block body %}
+<section class="title">
+<h1>Radar Frame</h1>
+</section>
+<section class="current-frame">
+    <img src="/frame?debug=true" />
+</section>
+<section class="info">
+    <span>Last Updated</span>
+    <span>{{ last_updated }}</span>
+</section>
+<section class="settings">
+    {% include 'partials/settings.html' %}
+</section>
+{% endblock %}

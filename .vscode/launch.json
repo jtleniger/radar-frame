@@ -5,8 +5,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "main.py",
-            "type": "python",
+            "name": "render-clear",
+            "type": "debugpy",
             "request": "launch",
             "program": "main.py",
             "console": "integratedTerminal",
@@ -14,8 +14,17 @@
             "args": ["render-clear"]
         },
         {
+            "name": "run-server",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": ["run-server"]
+        },
+        {
             "name": "bbox.py",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "bbox.py",
             "console": "integratedTerminal",
